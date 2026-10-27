@@ -90,7 +90,20 @@
   - randomize: 0 ~ `0xFFFFFFFF`를 개수로 나눈 나머지라 연결된 입력이 거의 고르게 뽑힌다.
 - **index를 링크로 받으면** 프론트엔드가 제어를 적용하지 않는다(`applyWidgetControl`이 연결된 입력이면 건너뜀).
 - **"Manual Random" 버튼**: 스크린샷 seed 위젯 아래 버튼. ComfyUI 프론트엔드 소스·로케일에 없는 문구라 다른 확장이 붙인 것으로 보고 넣지 않았다.
-- **JS 변경 없음**: `web/any_index_switch.js`는 입력 슬롯만 다루고 위젯을 건드리지 않는다.
+- **JS 변경 없음**: `web/any_index_switch.js`는 입력 슬롯만 다루고 위젯을 건드리지 않는다. → 아래 "생성 후 제어 순환"으로 바뀌었다.
+
+## 2026-10-27 생성 후 제어 순환
+- **사용자 요청**: increment는 마지막 다음에 0, decrement는 -1이 되면 마지막 번호, randomize는 0 ~ 연결된 입력 개수-1. index 입력이 링크로 연결되어 있으면 동작하지 않는다(프론트엔드 기본 동작 그대로). 위 기록의 "위젯 숫자는 계속 커진다", "decrement는 0에서 멈춘다"는 이걸로 바뀌었다.
+- **방식**: `onNodeCreated`에서 index 위젯의 제어 위젯(`index.linkedWidgets[0]`)의 `beforeQueued`/`afterQueued`를 감싼다. 연결된 입력이 있고 모드가 fixed가 아니면 다음 순서로 처리한다.
+  1. 현재 값을 `value % 개수`로 정리한다.
+  2. min/max를 잠시 넓힌다. increment/decrement는 -1 ~ 개수, randomize는 0 ~ 개수.
+  3. 원래 훅을 부른다. before/after 설정, 첫 실행 건너뛰기, index 링크 시 건너뛰기는 프론트엔드가 그대로 판단한다.
+  4. min/max를 되돌리고, 개수 이상이면 0, 음수면 개수-1로 바꾼 뒤 callback을 부른다.
+- **범위를 넓히는 이유**: 기본 제어는 [min, max]로 잘라 끝에서 멈추므로 끝을 넘었는지 알 수 없다. randomize는 `floor(random * (max - min)) + min`이라 max를 뽑지 않는다. 그래서 max를 개수로 두어야 0 ~ 개수-1이 고르게 나온다. randomize의 min을 -1로 넓히면 -1이 마지막으로 바뀌어 마지막 입력이 두 배로 뽑히므로 0으로 둔다.
+- **직접 계산하지 않은 이유**: 언제 값을 바꿀지(before/after 모드, 첫 실행, index 링크)는 프론트엔드 내부 상태(`HAS_EXECUTED` 심볼 등)에 있어 밖에서 알 수 없다. 원래 훅에 판단을 맡기고 결과만 고친다.
+- **정리 부작용**: 1단계는 원래 훅이 값을 바꾸지 않는 경우(after 모드의 beforeQueued, index 링크)에도 일어나므로, 범위 밖 값(예: 연결 3개에 7)은 전송 전에 1로 바뀐다. Python도 `7 % 3 = 1`을 고르므로 선택되는 입력은 같다.
+- **바꾸지 않은 것**: 손으로 입력하는 index 위젯 범위(0 ~ `0xFFFFFFFF`)와 Python의 나머지 연산. 링크로 받은 index나 손으로 넣은 큰 값은 지금처럼 Python에서 순환한다.
+- **확인 방법**: ComfyUI가 이 PC에 없어, 프론트엔드 제어 로직(`valueControlWidgets.ts`, `valueControl.ts`의 숫자 경로, ComfyUI_frontend main 2026-10-27)을 옮긴 가짜 위젯 위에서 실제 확장 파일을 Node로 실행했다(임시 스크립트, 저장소에는 넣지 않음). increment/decrement 순환, randomize 분포(3만 회, 각 1/3 ± 0.02), fixed, 중간 빈 입력, 연결 개수 변경, index 링크, 연결 없음, min/max 복구, before 모드를 확인했다. 고치기 전 JS로 돌리면 increment가 0, 1, 2, 3…으로 커져 실패하는 것도 확인했다.
 
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 

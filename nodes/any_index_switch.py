@@ -29,7 +29,8 @@ class AnyIndexSwitch:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                # 프론트엔드가 생성 후 제어 위젯을 붙인다. 기본 fixed라 예전 워크플로는 index가 바뀌지 않는다
+                # 프론트엔드가 생성 후 제어 위젯을 붙인다. 기본 fixed라 예전 워크플로는 index가 바뀌지 않는다.
+                # 연결된 입력 범위 안에서 순환시키는 부분은 web/any_index_switch.js에 있다
                 "index": ("INT", {"default": 0, "min": 0, "max": 0xFFFFFFFF, "control_after_generate": "fixed"}),
             },
             "optional": ValueInputs(value0=(ANY, {"lazy": True})),

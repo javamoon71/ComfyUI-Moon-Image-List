@@ -91,6 +91,15 @@ seed 위젯처럼 실행할 때마다 index를 fixed / increment / decrement / r
 - [ ] push (사용자 확인 후)
 - [ ] ComfyUI PC에서 increment / randomize 동작 확인
 
+## Plan 11 — 생성 후 제어를 연결된 입력 범위에서 순환
+increment는 마지막 다음 0, decrement는 0 다음 마지막, randomize는 0 ~ 개수-1. index가 링크로 연결되면 동작하지 않는다.
+- [x] 제어 위젯 훅을 감싸 범위를 잠시 넓히고 넘친 값을 반대쪽 끝으로 (`web/any_index_switch.js`)
+- [x] 프론트엔드 제어 로직을 옮긴 Node 하네스로 확인 (고치기 전 JS는 실패)
+- [x] README, context-notes 반영
+- [x] 커밋
+- [ ] push (사용자 확인 후)
+- [ ] ComfyUI PC에서 increment / decrement / randomize 순환 확인
+
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 통합 전 저장소의 기록이다(마지막 커밋 1d8775a). 파일 이름은 통합 전 기준이다.
 
