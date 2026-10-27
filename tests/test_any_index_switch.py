@@ -13,15 +13,24 @@ class TestAnyIndexSwitch(unittest.TestCase):
     def setUp(self):
         self.node = AnyIndexSwitch()
 
+    # INPUT_IS_LIST라 ComfyUI는 모든 입력을 리스트로 넘긴다. 위젯 값과 일반 출력은 항목 1개짜리 리스트다
     def test_switch_by_index_wraps(self):
-        self.assertEqual(self.node.switch(1, value0="a", value1=2), (2, 1))
-        self.assertEqual(self.node.switch(3, value0="a", value1=2), (2, 1))
+        self.assertEqual(self.node.switch([1], value0=["a"], value1=[2]), (2, 1))
+        self.assertEqual(self.node.switch([3], value0=["a"], value1=[2]), (2, 1))
 
     def test_index_output_counts_connected_inputs(self):
         # value1이 비어 있으면 value2가 1번이다. 슬롯 번호 2가 아니라 1을 출력한다
-        values = {"value0": "a", "value2": "b"}
-        self.assertEqual(self.node.switch(1, **values), ("b", 1))
-        self.assertEqual(self.node.switch(4, **values), ("a", 0))
+        values = {"value0": ["a"], "value2": ["b"]}
+        self.assertEqual(self.node.switch([1], **values), ("b", 1))
+        self.assertEqual(self.node.switch([4], **values), ("a", 0))
+
+    def test_runs_once_on_list_input(self):
+        # 선택된 입력이 항목 4개짜리 리스트여도 첫 항목 하나만 나간다. 선택되지 않은 입력은 (None,)이다
+        self.assertIs(AnyIndexSwitch.INPUT_IS_LIST, True)
+        values = {"value0": (None,), "value1": ["x", "y", "z", "w"]}
+        self.assertEqual(self.node.switch([1], **values), ("x", 1))
+        # index가 리스트로 들어와도 첫 값만 쓴다
+        self.assertEqual(self.node.switch([1, 0, 0], **values), ("x", 1))
 
     def test_outputs(self):
         self.assertEqual(AnyIndexSwitch.RETURN_TYPES, (ANY, "INT"))
@@ -29,18 +38,18 @@ class TestAnyIndexSwitch(unittest.TestCase):
 
     def test_counts_connected_in_slot_order(self):
         # value1은 연결되지 않았고, value10은 value2 뒤에 온다
-        values = {"value10": "c", "value0": "a", "value2": "b"}
-        self.assertEqual([self.node.switch(i, **values)[0] for i in range(3)], ["a", "b", "c"])
+        values = {"value10": ["c"], "value0": ["a"], "value2": ["b"]}
+        self.assertEqual([self.node.switch([i], **values)[0] for i in range(3)], ["a", "b", "c"])
 
     def test_no_inputs_raises(self):
         with self.assertRaises(ValueError):
-            self.node.switch(0)
+            self.node.switch([0])
         with self.assertRaises(ValueError):
-            self.node.check_lazy_status(0)
+            self.node.check_lazy_status([0])
 
     def test_lazy_requests_only_selected(self):
-        self.assertEqual(self.node.check_lazy_status(1, value0=None, value1=None), ["value1"])
-        self.assertEqual(self.node.check_lazy_status(1, value0=None, value1="b"), [])
+        self.assertEqual(self.node.check_lazy_status([1], value0=(None,), value1=(None,)), ["value1"])
+        self.assertEqual(self.node.check_lazy_status([1], value0=(None,), value1=["b"]), [])
 
     def test_dynamic_inputs_are_lazy(self):
         optional = AnyIndexSwitch.INPUT_TYPES()["optional"]

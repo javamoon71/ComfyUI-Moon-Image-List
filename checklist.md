@@ -107,6 +107,15 @@ increment는 마지막 다음 0, decrement는 0 다음 마지막, randomize는 0
 - [x] 커밋, push
 - [ ] ComfyUI PC에서 기존 워크플로 노드에 index 출력이 생기고 value 링크가 유지되는지 확인
 
+## Plan 13 — Any Index Switch 출력을 항상 1개로
+선택된 입력이 리스트(항목 여러 개)로 들어오면 노드가 항목 수만큼 실행되어 출력도 여러 개가 됐다(미리보기에 `1`이 4줄).
+- [x] `INPUT_IS_LIST = True`로 한 번만 실행, index는 첫 값, 선택된 입력은 첫 항목만 출력 (`nodes/any_index_switch.py`)
+- [x] 리스트 입력 테스트 (`tests/test_any_index_switch.py`)
+- [x] README, context-notes 반영
+- [x] 커밋
+- [ ] push
+- [ ] ComfyUI PC에서 미리보기에 값이 한 줄만 나오는지 확인
+
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 통합 전 저장소의 기록이다(마지막 커밋 1d8775a). 파일 이름은 통합 전 기준이다.
 

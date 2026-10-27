@@ -112,6 +112,15 @@
 - **기존 워크플로**: 프론트엔드 `LGraphNode.configure`는 저장된 `outputs`를 `LiteGraph.cloneObject(저장값, 현재 outputs)`로 앞자리부터 덮어쓴다(ComfyUI_frontend main, 2026-10-27). 저장된 출력은 1개라 새 노드 정의의 두 번째 출력(index)이 남는다. ComfyUI에서 직접 확인하지는 않았다.
 - **빈 입력**: `switch`는 `pick`이 먼저 ValueError를 내므로 `len(values)`가 0이어도 나눗셈까지 가지 않는다.
 
+## 2026-10-27 출력을 항상 1개로
+- **증상**: `value`/`index` 출력을 Preview Any에 연결하면 `1`이 4줄 나왔다(사용자 스크린샷, index 위젯 2 + increment라 실제 실행은 index 1). Preview Any는 리스트 입력이면 항목마다 실행하고 텍스트를 줄로 이어 보여 주므로, 스위치 출력이 항목 4개짜리 리스트였다.
+- **원인**: ComfyUI `_async_map_node_over_list`는 `INPUT_IS_LIST`가 없으면 입력 중 가장 긴 리스트 길이만큼 노드를 실행한다(짧은 입력은 마지막 항목 재사용). ComfyUI 소스(master, 2026-10-27)를 보면 선택되지 않은 lazy 입력은 `add_node`가 링크를 건너뛰어 `get_cache`가 None이고, `get_input_data`가 `(None,)`으로 채운다. 그래서 길이 4는 선택된 value1(또는 index 링크)에서 온 것으로 본다. 사용자 워크플로는 직접 보지 않았다.
+- **사용자 결정**: 선택된 index는 하나이므로 출력도 1개.
+- **방식**: `INPUT_IS_LIST = True`. 한 번만 실행되고 모든 입력이 리스트로 온다. `index`는 첫 값, 선택된 입력은 첫 항목만 낸다. `OUTPUT_IS_LIST`는 두지 않아 출력 슬롯 모양도 그대로다.
+- **lazy 판정**: 미실행 입력은 `(None,)`이라 `values[name][0] is None`으로 본다. 이미 실행된 입력을 다시 요청해도 ComfyUI가 `missing_keys`로 걸러 준다.
+- **바뀌는 동작**: 리스트를 일부러 넘기던 경우(예: Text List `text_list` → 스위치 → 항목마다 실행)는 이제 첫 항목만 나간다. 리스트 전체를 넘기려면 `OUTPUT_IS_LIST = (True, False)`로 선택된 리스트를 그대로 내면 되지만, 사용자 요청(출력 1개)과 달라 쓰지 않았다. IMAGE 배치는 리스트 항목 하나(텐서)라 영향이 없다.
+- **빈 리스트**: 선택된 입력이 빈 리스트면 `[0]`에서 IndexError가 난다. 고치기 전에도 `slice_dict`의 `v[-1]`에서 같은 에러가 났으므로 그대로 둔다.
+
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 
 ### 2026-10-21 결정 사항

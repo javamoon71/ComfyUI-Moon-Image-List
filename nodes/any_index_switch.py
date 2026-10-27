@@ -41,6 +41,8 @@ class AnyIndexSwitch:
     RETURN_NAMES = ("value", "index")
     FUNCTION = "switch"
     CATEGORY = "utils"
+    # 리스트 입력이 있어도 항목마다 실행하지 않고 한 번만 실행해 출력이 1개가 되게 한다. 모든 입력이 리스트로 들어온다
+    INPUT_IS_LIST = True
 
     @staticmethod
     def pick(index, values):
@@ -51,10 +53,11 @@ class AnyIndexSwitch:
         return names[index % len(names)]
 
     def check_lazy_status(self, index, **values):
-        # 아직 실행되지 않은 lazy 입력은 None으로 들어온다. 선택된 입력만 실행을 요청한다
-        name = self.pick(index, values)
-        return [name] if values[name] is None else []
+        # 아직 실행되지 않은 lazy 입력은 (None,)으로 들어온다. 선택된 입력만 실행을 요청한다
+        name = self.pick(index[0], values)
+        return [name] if values[name][0] is None else []
 
     def switch(self, index, **values):
+        # 선택된 입력이 리스트여도 첫 항목 하나만 낸다
         # 출력 index는 순환한 뒤 실제로 고른 번호(연결된 입력 기준 0 ~ 개수-1)다. 슬롯 번호(value2의 2)가 아니다
-        return values[self.pick(index, values)], index % len(values)
+        return values[self.pick(index[0], values)][0], index[0] % len(values)
