@@ -67,6 +67,12 @@
 - [ ] GitHub `ComfyUI-Moon-Tools`에 push (사용자 확인 후)
 - [ ] ComfyUI PC: 예전 `ComfyUI-Moon-SaveImage` 폴더 삭제 후 네 노드 동작 확인
 
+## Plan 8 — 저장소 설명을 네 노드에 맞추기
+- [ ] GitHub About 설명 변경 (사용자가 직접)
+- [x] README 첫 문단에 네 노드 모두 소개
+- [x] 문제 해결: 노드 검색은 `moon`으로 안내, 예전 폴더 충돌에 Save Image 추가
+- [ ] GitHub에 push
+
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 통합 전 저장소의 기록이다(마지막 커밋 1d8775a). 파일 이름은 통합 전 기준이다.
 

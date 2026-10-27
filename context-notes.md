@@ -68,6 +68,11 @@
 - **README**: Text List 때와 같이 한국어 README.md 하나에 README.ko.md 내용을 넣었다. 영어 README는 가져오지 않았다. 설치·업데이트·삭제 안내는 팩 공통 내용과 겹쳐 뺐다.
 - **Save Image 기록**: 아래에 원래 context-notes를 그대로 붙였다. 파일 이름은 통합 전 기준이다(`nodes.py` = 지금의 `nodes/save_image.py`).
 
+## 2026-10-27 저장소 설명 갱신
+- **GitHub About**: Image List 시절 문구("manage multiple images as a list and output one by index or random")가 남아 있었다. 새 문구는 `ComfyUI custom nodes: image and text lists that output one item by index or random, an any-type index switch, and an image saver with format, folder, and metadata options`. 이 PC에는 `gh`·인증이 없어 사용자가 Settings에서 직접 바꾼다.
+- **README 첫 문단**: 위 문구와 같은 순서(목록 → 스위치 → 저장)로 네 노드를 모두 소개한다. 이전 문단에는 Any Index Switch가 빠져 있었다.
+- **노드 검색 안내**: 세 노드는 표시 이름에 `Moon`이 있고 Text List는 `SEARCH_ALIASES`의 `moon`으로 찾히므로, 문제 해결에서는 `moon` 하나로 안내한다. 별칭을 지원하지 않는 예전 ComfyUI(bdeac88 이전)에서는 Text List만 `text list`로 찾아야 한다.
+
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 
 ### 2026-10-21 결정 사항
