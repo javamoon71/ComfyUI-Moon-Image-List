@@ -113,7 +113,7 @@ increment는 마지막 다음 0, decrement는 0 다음 마지막, randomize는 0
 - [x] 리스트 입력 테스트 (`tests/test_any_index_switch.py`)
 - [x] README, context-notes 반영
 - [x] 커밋
-- [ ] push
+- [x] push (9369b3a)
 - [ ] ComfyUI PC에서 미리보기에 값이 한 줄만 나오는지 확인
 
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
