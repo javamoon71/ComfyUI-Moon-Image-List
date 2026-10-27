@@ -47,3 +47,147 @@
 - **바꾸지 않은 곳**: 노드 키·표시 이름(워크플로 호환), Image List 드래그 MIME 타입(`application/x-comfyui-moon-image-list-item`, 위젯 내부 식별자), 로컬 폴더 이름.
 - **확장 이름 변경 영향**: 이 확장들은 설정을 저장하지 않아 잃는 값이 없다. ComfyUI 설정에서 확장을 꺼 두었다면 다시 켜진 상태가 된다(Text List 때와 같은 판단).
 - **프론트엔드 파일 경로**: ComfyUI는 `/extensions/<설치 폴더 이름>/...`으로 JS를 제공한다. 위 "drag and drop" 기록의 `/extensions/ComfyUI-Moon-Image-List/image_list.js`는 설치 폴더 이름을 따르므로, 새로 clone했다면 `/extensions/ComfyUI-Moon-Tools/image_list.js`다.
+
+## 2026-10-27 Text List 통합
+- **가져온 것**: ComfyUI-Moon-Text-List의 마지막 커밋 1d8775a에서 `nodes.py` → `nodes/text_list.py`, `web/text_list.js`, `tests/test_nodes.py` → `tests/test_text_list.py`. 코드는 그대로이고, 바꾼 곳은 테스트 import 경로와 확장 이름(`ComfyUI-Moon-Tools.TextList`)뿐이다.
+- **git 이력은 가져오지 않았다**: 파일만 복사했다. 이전 이력은 GitHub의 ComfyUI-Moon-Text-List 저장소에 남는다. 이력까지 합치려면 나중에 `git merge --allow-unrelated-histories`로 붙일 수 있다.
+- **노드 키·표시 이름 유지**: `TextList` / `Text List`. 저장된 워크플로가 그대로 열린다. Image List·Any Index Switch와 표시 이름 규칙(`Moon ... (Key)`)이 다르지만, 노드 제목이 바뀌는 변경이라 통합 범위 밖으로 두었다.
+- **예전 팩과 함께 설치하면 안 된다**: 같은 `TextList` 키가 두 번 등록되면 나중에 불러온 쪽이 덮어쓴다. 두 JS 확장이 모두 `TEXT_LIST` 위젯과 `nodeCreated`를 등록해 위젯 이벤트가 두 번 붙을 수 있다. README에 예전 폴더를 지우라고 적었다.
+- **중복 코드는 합치지 않았다**: `parse_items`, `_rng`가 `image_list.py`와 `text_list.py`에 각각 있지만 형식(파일 이름 목록 / 제목·내용 쌍)이 달라 모듈마다 둔다.
+- **README**: 이 저장소의 한국어 README.md 하나에 Text List 사용법(README.ko.md 기준)을 넣었다. Text List의 영어 README는 가져오지 않았다.
+- **Text List 기록**: 아래에 원래 context-notes를 그대로 붙였다. 파일 이름은 통합 전 기준이다(`nodes.py` = 지금의 `nodes/text_list.py`).
+- **README 팁 주의**: Text List 기록("GitHub 공개용 README + 라이선스")에 따르면 프론트엔드는 `control_after_generate` 옵션이 있거나 이름이 `seed`/`noise_seed`인 INT에만 control after generate를 붙인다. Image List README의 `index` increment 팁은 이 기준으로는 동작하지 않을 수 있다. 사용자 확인이 필요하다.
+
+## Text List (ComfyUI-Moon-Text-List에서 통합)
+
+### 2026-10-21 결정 사항
+- **항목 구분**: 줄바꿈 기준. 각 줄은 앞뒤 공백을 제거하고, 빈 줄은 항목에서 제외한다.
+  - 이유: 프롬프트 목록을 위젯에 붙여 넣을 때 빈 줄이 섞이기 쉽다.
+- **index 범위 초과**: 항목 수로 나눈 나머지를 사용한다(순환).
+  - 이유: index 위젯을 `increment`로 두면 큐를 돌릴 때마다 목록을 끝없이 순환할 수 있다.
+- **빈 목록**: 에러 대신 빈 문자열을 출력한다.
+- **테스트**: pytest가 설치되어 있지 않아 표준 `unittest`를 사용한다. `python -m unittest` 로 실행.
+- **배포**: 개인용이므로 `pyproject.toml`/Registry 설정은 만들지 않는다.
+
+### 2026-10-21 항목별 입력칸 UI
+- **방식**: 커스텀 입력 타입 `TEXT_LIST` + 프론트엔드 `getCustomWidgets`로 DOM 위젯을 만든다.
+  - 이유: 기본 STRING 위젯을 숨기는 방식은 프론트엔드 버전(캔버스/Vue 노드)마다 동작이 달라 깨지기 쉽다.
+- **저장 형식**: 항목들을 줄바꿈으로 이어 붙인 문자열. 입력칸은 한 줄짜리라 항목 안에 줄바꿈이 들어갈 일이 없다.
+  - 리스트 그대로 보내면 ComfyUI가 `[node_id, slot]` 링크로 오인할 수 있어 문자열로 보낸다.
+  - Python 선택 로직(`parse_items`)과 기존 테스트를 그대로 쓸 수 있다.
+- **빈 항목**: Python에서 계속 제외한다. UI의 번호도 비어 있지 않은 항목만 세고, 빈 칸은 `-`로 표시해 실제 index와 맞춘다.
+- **주의**: ComfyUI에 표시된 노드 배지가 `comfyui-workflow-encrypt`였다. 다른 팩과 `TextList` 키가 충돌했을 가능성이 있어 확인이 필요하다.
+
+### 2026-10-21 랜덤 On/Off
+- **On일 때 index는 무시**하고 비어 있지 않은 항목 중 하나를 고른다.
+- **재실행**: ComfyUI는 입력이 같으면 캐시된 결과를 쓴다. On일 때 `IS_CHANGED`가 NaN을 반환해 매번 다시 실행되게 한다. Off일 때는 일정한 값을 반환해 캐시를 그대로 쓴다.
+- **난수 생성기**: 모듈 전용 `random.Random()` 인스턴스를 쓴다. 다른 노드가 전역 `random.seed()`를 고정해도 같은 값이 반복되지 않게 하기 위해서다.
+- **seed 위젯을 쓰지 않은 이유**: 요청이 단순 On/Off였다. 결과 재현이 필요해지면 seed 입력(control_after_generate)으로 바꾸는 것을 검토한다.
+
+### 2026-10-21 index 범위 제한
+- **화살표 제한**: index 위젯의 `options.max`를 항목이 바뀔 때마다 갱신한다. 순환이 아니라 끝에서 멈춘다.
+- **갱신 시점**: TEXT_LIST 위젯이 만들어질 때는 index 위젯이 아직 없어서 `nodeCreated`에서 한 번 더 맞춘다.
+- **Python의 나머지 연산은 유지**: index를 다른 노드에서 링크로 받으면 UI 제한이 적용되지 않으므로 안전장치로 둔다.
+
+### 2026-10-21 보기/편집 전환 + 항목 내 줄바꿈
+- **편집 단위**: 클릭한 항목 하나만 textarea로 바뀐다. 포커스를 잃으면 보기 모드로 돌아간다.
+- **저장 형식 변경**: 항목 안에 줄바꿈이 들어가므로 줄 단위 문자열 대신 `JSON.stringify(items)` 문자열로 보낸다.
+  - 리스트 자체가 아니라 문자열이라 ComfyUI가 링크로 오인하지 않는다.
+  - JSON 배열이 아니면 예전 형식으로 보고 줄 단위로 나눈다(Python, JS 모두).
+- **버튼 mousedown preventDefault**: 편집 중 삭제/추가 버튼을 누르면 textarea blur → 다시 그리기로 버튼이 사라져 click이 유실된다. 포커스 이동을 막아 해결.
+- **높이 계산**: 실제 DOM 높이 대신 줄 수 × 줄 높이로 추정한다. 긴 줄이 자동 줄바꿈되면 모자랄 수 있어 컨테이너에 `overflow-y:auto`를 둔다.
+
+### 2026-10-21 입력창 최대 10줄
+- 편집 중인 textarea의 표시 줄 수를 최대 10줄(`MAX_EDIT_LINES`)로 제한한다. 넘으면 textarea 안에서 스크롤한다.
+- 보기 모드는 제한하지 않는다(요청이 입력창 한정).
+
+### 2026-10-21 보기 모드 최대 2줄
+- 보기 모드 항목은 최대 2줄(`MAX_VIEW_LINES`)만 보이고 나머지는 `-webkit-line-clamp`로 `…` 처리한다.
+- 이전에는 보기 모드 높이 제한이 없어, 편집을 마쳐도 항목 줄 수만큼 높이가 유지됐다.
+- 높이 추정도 보기 모드는 최대 2줄로 계산해, 편집을 마치면 노드가 다시 줄어든다.
+
+### 2026-10-21 목록 스크롤 + 노드 높이 고정
+- **자동 확장 제거**: 항목 추가/편집 때 `node.setSize`로 노드를 키우던 동작을 없앴다. 노드 높이는 사용자가 정한 대로 둔다.
+- **구조**: 컨테이너(height:100%) = 스크롤되는 list(flex:1, overflow-y:auto) + 아래 고정된 "+ 항목 추가" 버튼.
+- **최소 높이**: 2줄 항목 하나 + 추가 버튼(`getMinHeight` 고정값 90px).
+- 편집 입력창(최대 10줄)이 list보다 크면 list가 스크롤된다. 새 항목은 focus 시 브라우저가 보이는 위치로 스크롤한다.
+
+### 2026-10-22 항목 제목
+- **저장 형식**: 항목 = `{ title, text }`, 전체는 `JSON.stringify(items)`. 문자열 항목(예전 형식)은 `{ title: "", text }`로 읽는다(Python `item_text`, JS `toItem`).
+- **출력은 내용만**: 제목은 목록에서 항목을 구분하는 용도. 출력 슬롯은 그대로 하나다.
+- **빈 항목 판정은 내용 기준**: 제목만 있고 내용이 비면 빈 항목으로 보고 index 번호에서 뺀다(`-` 표시).
+- **편집 전환**: 제목 label을 누르면 제목 입력창에, 내용을 누르면 내용 입력창에 포커스. blur 때 `relatedTarget`이 같은 항목 안이면 편집을 유지해 제목↔내용을 오갈 수 있게 했다.
+- **제목 Enter**: 1줄 입력이라 Enter는 내용 입력창으로 이동한다.
+- **새 항목**: `+ 항목 추가` 시 제목 입력창부터 포커스한다.
+- **확인 방법**: ComfyUI가 이 PC에 없어 jsdom으로 위젯을 띄워 전환/저장 동작을 확인했다(임시 스크립트, 저장소에는 넣지 않음).
+
+### 2026-10-22 제목 숨김
+- **범위**: 노드 전체 토글. 항목별 숨김은 하지 않는다.
+- **위치**: `random`처럼 `show_title` BOOLEAN 위젯(사용자 선택). Python은 인자만 받고 쓰지 않는다. 예전 워크플로는 기본값 On으로 채워진다.
+- **편집 때도 숨김**: Off면 편집 모드에서도 내용 입력창만 보인다. 제목 데이터는 지우지 않아 다시 켜면 돌아온다.
+- **다시 그리기 시점**: TEXT_LIST 위젯이 만들어질 때 `show_title` 위젯이 아직 없어서 `nodeCreated`에서 위젯 callback과 `node.onConfigure`(워크플로 불러오기)에 render를 연결한다.
+
+### 2026-10-22 title 출력
+- **슬롯 순서**: `(text, title)`. text를 첫 슬롯에 두어 기존 워크플로의 링크가 그대로 이어진다.
+- **파싱**: `parse_items`가 `(제목, 내용)` 쌍을 돌려준다. 둘 다 앞뒤 공백을 제거한다. 빈 항목 판정은 여전히 내용 기준이다.
+- **제목 없음**: 예전 문자열 항목, `title` 키가 없거나 빈 경우 모두 빈 문자열. 빈 목록이면 둘 다 빈 문자열.
+- **show_title과 무관**: 이 위젯은 UI 표시만 정한다. Off여도 `title`은 출력한다(사용자 요청). "출력은 내용만"이던 2026-10-22 항목 제목 결정은 이걸로 바뀌었다.
+
+### 2026-10-22 text_list 출력
+- **형식**: ComfyUI 표준 리스트 출력(`OUTPUT_IS_LIST = (False, False, True)`), 타입은 STRING. 연결된 일반 노드는 항목마다 한 번씩 실행된다. 하나의 Python list를 STRING 슬롯으로 보내면 받는 노드가 문자열로 다루다 깨지므로 쓰지 않았다.
+- **내용**: 선택과 같은 기준(빈 내용 제외, 앞뒤 공백 제거)으로 모든 항목의 내용만 보낸다. 제목은 넣지 않는다. index/random과 무관하다.
+- **슬롯 순서**: `(text, title, text_list)`. 기존 링크 유지.
+
+### 2026-10-22 title_list 출력
+- **범위**: UI에서 번호가 붙는 항목(내용이 비지 않은 항목)만 넘긴다(사용자 확인). text_list와 같은 기준이라 두 리스트의 길이와 순서가 같다.
+- **제목 없음**: 빈 문자열로 자리를 채워 text_list와 짝이 맞게 한다.
+- **슬롯 순서**: `(text, title, text_list, title_list)`.
+
+### 2026-10-22 출력 슬롯 순서 변경
+- **순서**: `(title, text, title_list, text_list)` (사용자 요청). 이전의 "text를 첫 슬롯에 두어 기존 링크 유지" 결정은 이걸로 바뀌었다.
+- **영향**: ComfyUI 링크는 슬롯 번호로 저장되므로, 예전에 저장한 워크플로는 이 노드의 출력 링크를 다시 연결해야 한다.
+
+### 2026-10-26 보기 모드 줄 수 자동 확장
+- **규칙**: 모든 항목에 같은 줄 수 N을 쓴다. 5줄부터 줄여 가며 목록이 스크롤 없이 다 들어가는 가장 큰 N을 고르고, 2줄로도 넘치면 2줄(예전 동작) + 스크롤. "보기 모드 최대 2줄" 결정은 이걸로 바뀌었다.
+  - 항목별로 다르게 늘리는 방식은 어느 항목을 먼저 늘릴지 정해야 해서 쓰지 않았다.
+- **측정**: 줄 수 추정 대신 `list.scrollHeight <= list.clientHeight`를 실제로 재본다. 긴 줄이 자동 줄바꿈된 경우도 맞게 계산된다.
+- **다시 맞추는 시점**: render 끝, container의 ResizeObserver(노드 크기 변경). list를 관찰하면 스크롤바가 생기고 사라질 때마다 list 너비가 바뀌어 줄 수를 맞추다 다시 호출되므로 container를 관찰한다.
+- **편집 중에는 유지**: 편집 입력창이 커져도 다른 항목 줄 수가 바뀌어 화면이 움직이지 않게 한다. blur 후 render에서 다시 맞춘다.
+- **높이 0이면 건너뜀**: 노드가 접히거나 화면에 없을 때 0 ≤ 0으로 5줄을 고르지 않게 한다.
+- **최소 높이**: `getMinHeight`는 계속 2줄 기준.
+- **확인 방법**: 헤드리스 Chrome(CDP, 실제 시간)으로 위젯을 띄워 확인했다. `--virtual-time-budget` 모드는 렌더링 프레임이 돌지 않아 ResizeObserver가 호출되지 않으므로 쓸 수 없었다.
+
+### 2026-10-26 줄 수 상한 제거
+- **변경**: 최대 5줄 제한을 없앴다(사용자 요청: 노드 높이가 커질수록 줄 수도 늘리기). 위 "5줄부터 줄여 가며" 규칙은 이걸로 바뀌었다.
+- **탐색**: 상한이 없어 한 줄씩 줄이면 큰 노드에서 수십 번 레이아웃을 잰다. 2줄 ~ `list 높이 / LINE_HEIGHT` 사이를 이진 탐색한다. 한 항목이 list보다 많은 줄을 보일 수 없으므로 이 값이 상한이다. 줄 수가 늘면 높이도 줄지 않으므로 이진 탐색이 맞다.
+- **결과**: 노드를 키우면 내용이 다 보일 때까지 줄 수가 늘고, 줄이면 다시 줄어든다. 2줄로도 넘치면 예전처럼 2줄 + 스크롤.
+
+### 2026-10-27 노드 검색 별칭
+- **방식**: 노드 클래스에 `SEARCH_ALIASES` 리스트를 둔다. ComfyUI `server.py`가 이를 `search_aliases`로 내보내고, 프론트엔드 노드 검색(Fuse.js)은 `name`, `display_name`, `search_aliases`를 키로 찾는다(2026-10-27 기준 master/main 소스 확인).
+- **별칭**: `moon`, `text`, `textlist`, `text list` (사용자 요청). `moon` 외에는 이미 name(`TextList`)이나 display_name(`Text List`)으로 찾히지만, 요청한 검색어를 한곳에 명시하려고 모두 넣었다.
+- **display_name을 "Moon Text List"로 바꾸지 않은 이유**: 노드 제목이 바뀌는 눈에 보이는 변경이라 요청 범위를 넘는다. 별칭을 지원하지 않는 예전 ComfyUI에서 `moon` 검색이 필요해지면 그때 검토한다.
+- **노드 키(`TextList`)는 그대로**: 바꾸면 저장된 워크플로가 노드를 찾지 못한다.
+- **지원 시점**: ComfyUI 커밋 bdeac88(2026-01-21, #12010)에서 `SEARCH_ALIASES`가 추가됐다. 그 전 버전에서는 `moon`으로 찾히지 않는다.
+
+### 2026-10-27 GitHub 공개용 README + 라이선스
+- **라이선스: MIT** (사용자 선택). 근거로 조사한 내용은 다음과 같다.
+  - ComfyUI 본체·ComfyUI_frontend는 GPL-3.0.
+  - 인기 노드는 나뉜다. MIT(Custom-Scripts, rgthree, essentials, WAS), GPL-3.0(KJNodes, Impact Pack, Easy-Use), Apache-2.0(use-everywhere, controlnet_aux).
+  - Comfy Registry의 `pyproject.toml` 규격에서 `license`는 선택 항목이고, `{ file = "LICENSE" }` 형식을 쓴다.
+  - 이 노드의 Python은 ComfyUI 코드를 import하지 않는다. JS만 실행 시점에 `../../scripts/app.js`를 import하며, MIT인 rgthree·Custom-Scripts도 같은 방식이다.
+  - LICENSE가 없으면 기본적으로 모든 권리가 저작자에게 있어 다른 사람이 쓸 수 없다. 공개하려면 필요했다.
+  - 저작권자 이름은 git 사용자명 `javamoon71`.
+- **README 언어**: 영어 `README.md` + 한국어 `README.ko.md` (사용자 선택). 맨 위에서 서로 링크한다.
+- **구성**: 인기 노드 README(rgthree, Custom-Scripts, Impact Pack, KJNodes)를 참고해 소개 → 기능 → 설치(git clone, Manager, 업데이트, 삭제) → 사용법(입출력 표, 세부 동작) → 개발 → 라이선스 순으로 정리했다.
+- **ComfyUI-Manager 설치**: 아직 Manager 목록/Registry에 등록하지 않아 "Install via Git URL"만 안내한다. 최근 Manager는 `config.ini`의 `allow_git_url_install = true`(기본값 false)가 있어야 허용한다.
+- **UI 문구**: 위젯 버튼·placeholder가 한국어라 영어 README에 문구와 뜻을 표로 붙였다. UI 번역은 요청 범위 밖이라 하지 않았다.
+- **`control after generate` 팁 삭제**: ComfyUI 프론트엔드(`useIntWidget.ts`)는 `control_after_generate` 옵션이 있거나 이름이 `seed`/`noise_seed`인 INT에만 이 컨트롤을 붙인다. `index`에는 없어서 예전 README의 팁은 동작하지 않았다.
+- **클론 주소**: GitHub 저장소 이름은 `ComfyUI-Text-List`다(로컬 폴더 이름 `ComfyUI-Moon-Text-List`와 다름). README의 설치·업데이트 경로는 GitHub 이름을 따른다. → 아래 "저장소 이름 변경"으로 바뀌었다.
+
+### 2026-10-27 저장소 이름 변경
+- **새 이름**: `ComfyUI-Moon-Text-List` (사용자 요청). 로컬 폴더 이름과 같아졌다.
+- **바꾼 곳**: README 두 파일의 제목(`ComfyUI Moon Text List`), clone 주소, 설치 폴더 경로. 프론트엔드 확장 이름 `ComfyUI-Moon-Text-List.TextList`. 로컬 `origin` 주소.
+- **바꾸지 않은 곳**: 노드 키 `TextList`, 표시 이름 `Text List`, 카테고리. 저장소 이름이 아니라 노드 이름이고, 키를 바꾸면 저장된 워크플로가 깨진다.
+- **확장 이름 변경 영향**: 확장 이름은 ComfyUI 안에서 확장을 구분하는 식별자다. 이 확장은 설정을 저장하지 않아 바꿔도 잃는 값이 없다. 사용자가 ComfyUI 설정에서 이 확장을 꺼 두었다면 다시 켜진 상태가 된다.
+- **GitHub 쪽**: 이 PC에 GitHub CLI·인증이 없어 저장소 이름 변경은 사용자가 Settings에서 한다. GitHub는 옛 주소를 새 주소로 자동 연결하므로 기존 설치본의 `git pull`도 계속 된다. 옛 이름으로 새 저장소를 만들면 이 연결이 끊긴다.
+- **기존 설치본**: 폴더 이름이 `ComfyUI-Text-List`로 남아도 동작한다. `WEB_DIRECTORY`가 상대 경로이고 JS도 `../../scripts/app.js`로 폴더 이름에 의존하지 않는다.
