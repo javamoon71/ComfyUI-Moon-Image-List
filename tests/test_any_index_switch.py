@@ -42,6 +42,11 @@ class TestAnyIndexSwitch(unittest.TestCase):
         # 프론트엔드에 보내는 노드 정의에는 value0만 들어간다
         self.assertEqual(list(json.loads(json.dumps(optional))), ["value0"])
 
+    def test_index_has_control_after_generate(self):
+        # 문자열이면 프론트엔드가 그 값을 기본 모드로 쓴다. True면 randomize가 기본이 된다
+        options = AnyIndexSwitch.INPUT_TYPES()["required"]["index"][1]
+        self.assertEqual(options["control_after_generate"], "fixed")
+
     def test_any_type_matches_everything(self):
         self.assertFalse("IMAGE" != ANY)
         self.assertFalse(ANY != "MODEL")

@@ -80,6 +80,18 @@
 - **README**: 노드 이름, 섹션 제목(`#moon-text-list`), 검색어 순서를 바꿨다. `moon`이 표시 이름으로 찾히므로 "2026년 1월 말 이후 ComfyUI에서만 된다"는 안내 두 곳을 지웠다.
 - **노드 배지 관찰**: 같은 스크린샷에서 Moon Save Image, Moon Image List, Moon Any Index Switch의 출처 배지가 모두 `comfyui-workflow…`로 보였다. Text List 기록의 "`comfyui-workflow-encrypt` 배지 = `TextList` 키 충돌 가능성"과 달리, Text List만의 문제는 아닌 것으로 보인다. 원인(설치 폴더 이름, 다른 팩 등)은 확인하지 않았다.
 
+## 2026-10-27 Any Index Switch 생성 후 제어
+- **요청**: seed 위젯처럼 실행할 때마다 index를 fixed / increment / decrement / randomize로 바꾸기(사용자가 seed 위젯 스크린샷을 첨부).
+- **방식**: `index` INT 옵션에 `"control_after_generate": "fixed"` 한 줄. 프론트엔드 `useIntWidget.ts`(ComfyUI_frontend main, 2026-10-27)는 이 옵션이 있거나 이름이 `seed`/`noise_seed`인 INT에 제어 위젯을 붙인다. 옵션이 문자열이면 그 값을 기본 모드로, `True`면 `randomize`를 기본으로 쓴다. 백엔드 V3 `io.Int.Input`도 같은 옵션(bool 또는 fixed/increment/decrement/randomize)을 받는다.
+- **기본 `fixed`인 이유**: 제어 위젯은 `options.serialize: false`라 API 프롬프트에는 빠지지만, `widget.serialize`는 false가 아니어서 workflow의 `widgets_values`(index 다음 자리)와 `widgets_values_named`에 저장된다(`LGraphNode.ts`의 `serialiseWidgetValues`). 예전 워크플로에는 이 값이 없어 복원할 값이 없으면 위젯 기본값이 남으므로, `randomize`가 기본이면 예전 워크플로의 index가 갑자기 무작위로 바뀐다.
+- **숫자 동작**: `valueControl.ts`의 increment/decrement는 step만큼 더하고 빼서 [min, max]로 자른다. randomize는 [min, max]에서 고른다. 그래서 다음과 같이 동작한다.
+  - increment: max가 `0xFFFFFFFF`라 사실상 끝이 없고, Python의 `index % 개수`로 연결된 입력을 계속 돈다. 위젯 숫자는 계속 커진다.
+  - decrement: min 0에서 멈춘다. 0 이후로는 첫 번째 연결된 입력만 나간다. 거꾸로 순환하게 하려면 min을 음수로 내리면 된다. Python 나머지 연산은 음수도 끝에서부터 세므로(`-1 % 3 == 2`) 백엔드는 그대로 된다. 다만 `index`가 음수를 받게 되는 변경이라 요청 범위 밖으로 두었다(사용자 확인 필요).
+  - randomize: 0 ~ `0xFFFFFFFF`를 개수로 나눈 나머지라 연결된 입력이 거의 고르게 뽑힌다.
+- **index를 링크로 받으면** 프론트엔드가 제어를 적용하지 않는다(`applyWidgetControl`이 연결된 입력이면 건너뜀).
+- **"Manual Random" 버튼**: 스크린샷 seed 위젯 아래 버튼. ComfyUI 프론트엔드 소스·로케일에 없는 문구라 다른 확장이 붙인 것으로 보고 넣지 않았다.
+- **JS 변경 없음**: `web/any_index_switch.js`는 입력 슬롯만 다루고 위젯을 건드리지 않는다.
+
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 
 ### 2026-10-21 결정 사항

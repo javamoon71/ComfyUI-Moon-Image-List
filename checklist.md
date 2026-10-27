@@ -82,6 +82,15 @@
 - [x] push (ee993d7, GitHub 반영 확인)
 - [ ] ComfyUI PC에서 `moon` 검색에 네 노드가 나오는지 확인
 
+## Plan 10 — Any Index Switch index에 생성 후 제어
+seed 위젯처럼 실행할 때마다 index를 fixed / increment / decrement / randomize로 바꾼다.
+- [x] `index` 입력에 `control_after_generate: "fixed"` 추가 (`nodes/any_index_switch.py`)
+- [x] 단위 테스트 (`tests/test_any_index_switch.py`)
+- [x] README 반영
+- [x] 커밋
+- [ ] push (사용자 확인 후)
+- [ ] ComfyUI PC에서 increment / randomize 동작 확인
+
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 통합 전 저장소의 기록이다(마지막 커밋 1d8775a). 파일 이름은 통합 전 기준이다.
 
