@@ -25,3 +25,17 @@
 - **노드 키 유지**: `ImageList` 키와 표시 이름은 그대로라서 기존 워크플로는 영향이 없다.
 - **ComfyUI 본체의 `nodes` 모듈과 이름이 같지만** 루트 `__init__.py`가 상대 import(`.nodes.image_list`)를 쓰므로 충돌하지 않는다. 노드 파일 안에서 ComfyUI 본체 `nodes`를 import해야 하면 절대 import(`import nodes`)가 본체를 가리키는지 확인한다.
 - **테스트**: 노드별로 `tests/test_<노드>.py`. 기존 `tests/test_nodes.py`는 `tests/test_image_list.py`로 옮겼다.
+
+## 2026-10-27 Any Index Switch
+- **사용자 결정**: 입력 슬롯은 연결하면 자동 추가(고정 10개 대신), index는 Image List처럼 순환(에러 대신).
+- **index 의미**: 연결된 value 입력을 슬롯 번호 순서로 센 뒤 `index % 개수`. 중간 슬롯이 비면 건너뛴다. 연결된 입력이 없으면 에러.
+- **모든 타입**: `str`을 상속해 `__ne__`가 항상 False인 `AnyType("*")`을 입력/출력 타입으로 쓴다. 최신 ComfyUI `validate_node_input`은 `"*"`를 직접 받아 주지만, 예전 버전은 `!=` 비교만 하므로 호환용으로 남긴다.
+- **동적 입력(백엔드)**: Python은 `value0`만 선언하고, `optional`을 `ValueInputs`(dict 하위 클래스)로 만들어 `value\d+` 이름이면 `in`/`[]`에 `(ANY, {"lazy": True})`로 답한다. ComfyUI 소스(master, 2026-10-27)로 확인한 근거는 다음과 같다.
+  - `get_input_data`는 프롬프트에 있는 입력을 선언 여부와 관계없이 모두 함수에 넘긴다.
+  - `graph.add_node`는 `get_input_info`로 lazy 여부를 판단하므로, 위 dict가 없으면 value1 이후 입력은 eager로 실행된다.
+  - `validate_inputs`는 `set(optional)`, 즉 실제 키(value0)만 검증한다. value1 이후 입력의 업스트림은 이 노드를 거쳐 검증되지 않는다. 그 노드에 문제가 있으면 검증 단계가 아니라 실행할 때 에러가 난다(타입은 어차피 모두 허용).
+  - 노드 정의 JSON은 dict의 실제 항목만 직렬화하므로 프론트엔드에는 value0만 보인다.
+- **지연 평가**: `check_lazy_status`는 선택된 입력이 아직 None(미실행)일 때만 그 이름을 돌려준다. ComfyUI가 이미 실행된 입력은 걸러 주므로 무한 대기는 없다.
+- **동적 입력(프론트엔드)**: `onConnectionsChange`에서 슬롯을 맞춘다. 끝에서만 추가/삭제해 이름이 value0부터 빈틈없이 이어지게 한다. 중간 빈 슬롯은 지우지 않는다. 링크를 같은 노드의 다른 슬롯으로 옮기면 끊기→연결이 연달아 일어나 중간에 슬롯을 지우면 대상 슬롯이 사라질 수 있으므로 `queueMicrotask`로 미룬다. 불러온 워크플로는 이미 정리된 모양이라 맞추기가 아무것도 바꾸지 않고, 노드 크기도 바뀔 때만 높이를 다시 맞춘다.
+- **V3 스키마(`io.Autogrow`)는 쓰지 않았다**: 최신 ComfyUI에는 동적 입력 기능이 있지만, 이 팩은 V1 방식이고 ComfyUI 밖 단위 테스트를 유지하려고 기존 방식을 따른다.
+- **노드 키 `AnyIndexSwitch`**: Image List와 같은 규칙(접두사 없음, 표시 이름에 키 표기).

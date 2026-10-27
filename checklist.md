@@ -29,3 +29,15 @@
 - [x] 테스트를 `tests/test_image_list.py`로 이동, import 수정
 - [x] 테스트 통과 확인
 - [ ] ComfyUI PC에서 노드가 그대로 로드되는지 확인
+
+## Plan 4 — Any Index Switch 노드
+어떤 타입이든 여러 입력(value0, value1, ...)을 받아 index에 해당하는 값 하나를 출력한다.
+- 입력: index(INT), value0~(모든 타입, 연결하면 다음 슬롯 자동 추가)
+- 출력: value(모든 타입)
+- index는 연결된 입력을 슬롯 순서대로 세어 순환한다. 선택된 입력만 실행한다(lazy).
+- [x] 노드 구현 (`nodes/any_index_switch.py`)
+- [x] 슬롯 자동 추가/정리 (`web/any_index_switch.js`)
+- [x] 등록 (`__init__.py`)
+- [x] 단위 테스트 (`tests/test_any_index_switch.py`)
+- [x] README 반영
+- [ ] ComfyUI PC에서 실제 동작 확인
