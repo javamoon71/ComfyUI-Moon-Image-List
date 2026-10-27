@@ -18,3 +18,10 @@
 - **stopPropagation**: DOM 위젯 위 드롭이 document까지 올라가면 ComfyUI가 PNG를 워크플로로 불러오려 한다. 컨테이너에서 전파를 막는다.
 - 이미지가 아닌 파일(`image/*`가 아님)은 건너뛴다. 드래그 중에는 목록에 점선 테두리를 표시한다.
 - **2026-10-22 확인**: ComfyUI PC에서 처음엔 drag and drop과 128px 썸네일이 모두 반영되지 않았다. 코드 문제가 아니라 예전 `image_list.js`가 로드된 상태였고(업데이트/캐시), 최신으로 받은 뒤 둘 다 동작했다. 프론트엔드가 안 바뀐 것 같으면 `/extensions/ComfyUI-Moon-Image-List/image_list.js`를 직접 열어 버전부터 확인한다.
+
+## 2026-10-27 nodes 폴더 구조
+- **`nodes.py` → `nodes/image_list.py`**: 루트에 `nodes.py`와 `nodes/`가 함께 있으면 import 대상이 헷갈리므로 파일을 패키지 안으로 옮겼다. 노드마다 `nodes/<노드>.py` 파일 하나를 둔다.
+- **등록은 루트 `__init__.py`에서 명시적으로**: 자동 탐색은 하지 않는다. 새 노드를 추가하면 루트 `__init__.py`에 import 1줄과 `NODE_CLASS_MAPPINGS`/`NODE_DISPLAY_NAME_MAPPINGS` 항목을 추가한다.
+- **노드 키 유지**: `ImageList` 키와 표시 이름은 그대로라서 기존 워크플로는 영향이 없다.
+- **ComfyUI 본체의 `nodes` 모듈과 이름이 같지만** 루트 `__init__.py`가 상대 import(`.nodes.image_list`)를 쓰므로 충돌하지 않는다. 노드 파일 안에서 ComfyUI 본체 `nodes`를 import해야 하면 절대 import(`import nodes`)가 본체를 가리키는지 확인한다.
+- **테스트**: 노드별로 `tests/test_<노드>.py`. 기존 `tests/test_nodes.py`는 `tests/test_image_list.py`로 옮겼다.

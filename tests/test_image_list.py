@@ -10,7 +10,7 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from nodes import ImageList
+from nodes.image_list import ImageList
 
 # ComfyUI의 folder_paths 대신 임시 폴더를 input 폴더로 쓴다
 _input_dir = tempfile.TemporaryDirectory()

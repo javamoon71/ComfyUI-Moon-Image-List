@@ -21,3 +21,11 @@
 - [x] 노드의 다른 영역에 놓아도 추가 (`onDragOver`/`onDragDrop`)
 - [x] README 반영
 - [x] ComfyUI PC에서 실제 동작 확인
+
+## Plan 3 — nodes 폴더로 구조 변경
+여러 노드를 추가할 수 있도록 노드 파일을 `nodes/` 패키지로 모은다.
+- [x] `nodes.py` → `nodes/image_list.py` 이동, `nodes/__init__.py` 추가
+- [x] 루트 `__init__.py` import 경로 수정
+- [x] 테스트를 `tests/test_image_list.py`로 이동, import 수정
+- [x] 테스트 통과 확인
+- [ ] ComfyUI PC에서 노드가 그대로 로드되는지 확인
