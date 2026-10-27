@@ -14,8 +14,18 @@ class TestAnyIndexSwitch(unittest.TestCase):
         self.node = AnyIndexSwitch()
 
     def test_switch_by_index_wraps(self):
-        self.assertEqual(self.node.switch(1, value0="a", value1=2), (2,))
-        self.assertEqual(self.node.switch(3, value0="a", value1=2), (2,))
+        self.assertEqual(self.node.switch(1, value0="a", value1=2), (2, 1))
+        self.assertEqual(self.node.switch(3, value0="a", value1=2), (2, 1))
+
+    def test_index_output_counts_connected_inputs(self):
+        # value1이 비어 있으면 value2가 1번이다. 슬롯 번호 2가 아니라 1을 출력한다
+        values = {"value0": "a", "value2": "b"}
+        self.assertEqual(self.node.switch(1, **values), ("b", 1))
+        self.assertEqual(self.node.switch(4, **values), ("a", 0))
+
+    def test_outputs(self):
+        self.assertEqual(AnyIndexSwitch.RETURN_TYPES, (ANY, "INT"))
+        self.assertEqual(AnyIndexSwitch.RETURN_NAMES, ("value", "index"))
 
     def test_counts_connected_in_slot_order(self):
         # value1은 연결되지 않았고, value10은 value2 뒤에 온다

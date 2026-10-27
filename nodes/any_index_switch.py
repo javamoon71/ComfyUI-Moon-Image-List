@@ -36,8 +36,9 @@ class AnyIndexSwitch:
             "optional": ValueInputs(value0=(ANY, {"lazy": True})),
         }
 
-    RETURN_TYPES = (ANY,)
-    RETURN_NAMES = ("value",)
+    # index 출력은 value 뒤에 둔다. 링크는 슬롯 번호로 저장되므로 기존 value 링크가 그대로 이어진다
+    RETURN_TYPES = (ANY, "INT")
+    RETURN_NAMES = ("value", "index")
     FUNCTION = "switch"
     CATEGORY = "utils"
 
@@ -55,4 +56,5 @@ class AnyIndexSwitch:
         return [name] if values[name] is None else []
 
     def switch(self, index, **values):
-        return (values[self.pick(index, values)],)
+        # 출력 index는 순환한 뒤 실제로 고른 번호(연결된 입력 기준 0 ~ 개수-1)다. 슬롯 번호(value2의 2)가 아니다
+        return values[self.pick(index, values)], index % len(values)

@@ -105,6 +105,13 @@
 - **바꾸지 않은 것**: 손으로 입력하는 index 위젯 범위(0 ~ `0xFFFFFFFF`)와 Python의 나머지 연산. 링크로 받은 index나 손으로 넣은 큰 값은 지금처럼 Python에서 순환한다.
 - **확인 방법**: ComfyUI가 이 PC에 없어, 프론트엔드 제어 로직(`valueControlWidgets.ts`, `valueControl.ts`의 숫자 경로, ComfyUI_frontend main 2026-10-27)을 옮긴 가짜 위젯 위에서 실제 확장 파일을 Node로 실행했다(임시 스크립트, 저장소에는 넣지 않음). increment/decrement 순환, randomize 분포(3만 회, 각 1/3 ± 0.02), fixed, 중간 빈 입력, 연결 개수 변경, index 링크, 연결 없음, min/max 복구, before 모드를 확인했다. 고치기 전 JS로 돌리면 increment가 0, 1, 2, 3…으로 커져 실패하는 것도 확인했다.
 
+## 2026-10-27 index 출력
+- **요청**: 출력에 현재 선택된 index 값 추가.
+- **값**: 순환한 뒤 실제로 고른 번호 `index % 연결된 입력 개수`. README의 "연결된 입력을 위에서부터 0, 1, 2…로 센다"와 같은 기준이라 value1이 비어 있으면 value2가 1번이다. 슬롯 번호(2)가 아니다. 위젯 값은 생성 후 제어로 이미 범위 안에 있지만, index를 링크로 받거나 손으로 큰 값을 넣으면 위젯 값과 다를 수 있어 순환한 값을 낸다.
+- **슬롯 순서**: `(value, index)`. 링크는 슬롯 번호로 저장되므로 기존 `value` 링크가 그대로 이어진다.
+- **기존 워크플로**: 프론트엔드 `LGraphNode.configure`는 저장된 `outputs`를 `LiteGraph.cloneObject(저장값, 현재 outputs)`로 앞자리부터 덮어쓴다(ComfyUI_frontend main, 2026-10-27). 저장된 출력은 1개라 새 노드 정의의 두 번째 출력(index)이 남는다. ComfyUI에서 직접 확인하지는 않았다.
+- **빈 입력**: `switch`는 `pick`이 먼저 ValueError를 내므로 `len(values)`가 0이어도 나눗셈까지 가지 않는다.
+
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 
 ### 2026-10-21 결정 사항

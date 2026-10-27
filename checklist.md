@@ -100,6 +100,13 @@ increment는 마지막 다음 0, decrement는 0 다음 마지막, randomize는 0
 - [x] push (4b81625, GitHub 반영 확인)
 - [ ] ComfyUI PC에서 increment / decrement / randomize 순환 확인
 
+## Plan 12 — Any Index Switch index 출력
+- [x] 출력 `index`(INT) 추가, `value` 뒤 (`nodes/any_index_switch.py`)
+- [x] 값은 순환한 뒤 실제 선택 번호(연결된 입력 기준) + 테스트
+- [x] README, context-notes 반영
+- [x] 커밋, push
+- [ ] ComfyUI PC에서 기존 워크플로 노드에 index 출력이 생기고 value 링크가 유지되는지 확인
+
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 통합 전 저장소의 기록이다(마지막 커밋 1d8775a). 파일 이름은 통합 전 기준이다.
 
