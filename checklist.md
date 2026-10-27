@@ -88,7 +88,7 @@ seed 위젯처럼 실행할 때마다 index를 fixed / increment / decrement / r
 - [x] 단위 테스트 (`tests/test_any_index_switch.py`)
 - [x] README 반영
 - [x] 커밋
-- [ ] push (사용자 확인 후)
+- [x] push (4b81625, GitHub 반영 확인)
 - [ ] ComfyUI PC에서 increment / randomize 동작 확인
 
 ## Plan 11 — 생성 후 제어를 연결된 입력 범위에서 순환
@@ -97,7 +97,7 @@ increment는 마지막 다음 0, decrement는 0 다음 마지막, randomize는 0
 - [x] 프론트엔드 제어 로직을 옮긴 Node 하네스로 확인 (고치기 전 JS는 실패)
 - [x] README, context-notes 반영
 - [x] 커밋
-- [ ] push (사용자 확인 후)
+- [x] push (4b81625, GitHub 반영 확인)
 - [ ] ComfyUI PC에서 increment / decrement / randomize 순환 확인
 
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
