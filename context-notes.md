@@ -17,4 +17,4 @@
 - **두 경로**: 목록(DOM 위젯) 위 드롭은 컨테이너의 `drop` 이벤트로, 노드의 다른 영역(제목, index 위젯) 드롭은 LiteGraph `node.onDragOver`/`onDragDrop`으로 받는다. 업로드는 버튼과 같은 `addFiles`를 쓴다.
 - **stopPropagation**: DOM 위젯 위 드롭이 document까지 올라가면 ComfyUI가 PNG를 워크플로로 불러오려 한다. 컨테이너에서 전파를 막는다.
 - 이미지가 아닌 파일(`image/*`가 아님)은 건너뛴다. 드래그 중에는 목록에 점선 테두리를 표시한다.
-- **2026-10-22 확인**: ComfyUI PC에서 처음엔 drag and drop과 128px 썸네일이 모두 반영되지 않았다. 코드 문제가 아니라 예전 `image_list.js`가 로드된 상태였고(업데이트/캐시), 최신으로 받은 뒤 둘 다 동작했다. 프론트엔드가 안 바뀐 것 같으면 `/extensions/ComfyUI-Image-List/image_list.js`를 직접 열어 버전부터 확인한다.
+- **2026-10-22 확인**: ComfyUI PC에서 처음엔 drag and drop과 128px 썸네일이 모두 반영되지 않았다. 코드 문제가 아니라 예전 `image_list.js`가 로드된 상태였고(업데이트/캐시), 최신으로 받은 뒤 둘 다 동작했다. 프론트엔드가 안 바뀐 것 같으면 `/extensions/ComfyUI-Moon-Image-List/image_list.js`를 직접 열어 버전부터 확인한다.

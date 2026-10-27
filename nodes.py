@@ -64,7 +64,7 @@ class ImageList:
     def pick(images, index, random=False):
         items = parse_items(images)
         if not items:
-            raise ValueError("Image List: 등록된 이미지가 없습니다.")
+            raise ValueError("Moon Image List: 등록된 이미지가 없습니다.")
         if random:
             return _rng.choice(items)
         return items[index % len(items)]
@@ -85,5 +85,5 @@ class ImageList:
         name = self.pick(images, index, random)
         path = image_path(name)
         if not os.path.isfile(path):
-            raise FileNotFoundError(f"Image List: 이미지 파일을 찾을 수 없습니다: {name}")
+            raise FileNotFoundError(f"Moon Image List: 이미지 파일을 찾을 수 없습니다: {name}")
         return load_image(path)

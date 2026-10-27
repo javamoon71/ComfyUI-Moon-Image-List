@@ -1,4 +1,4 @@
-# ComfyUI Image List
+# ComfyUI Moon Image List
 
 여러 장의 이미지를 목록으로 관리하고, index 또는 랜덤으로 하나를 골라 출력하는 ComfyUI 커스텀 노드입니다. Load Image 노드를 여러 개 두는 대신 노드 하나로 이미지를 바꿔 가며 쓸 수 있습니다.
 
@@ -18,14 +18,14 @@ ComfyUI의 `custom_nodes` 폴더에 저장소를 복제한 뒤 ComfyUI를 다시
 
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/javamoon71/ComfyUI-Image-List.git
+git clone https://github.com/javamoon71/ComfyUI-Moon-Image-List.git
 ```
 
 추가로 설치할 Python 패키지는 없습니다.
 
 ## 사용법
 
-노드 추가 메뉴의 `image` → **Image List**에서 노드를 추가합니다.
+노드 추가 메뉴에서 `moon`, `image`, `imagelist` 중 하나를 검색해 **Moon Image List (ImageList)** 노드를 추가합니다. 기존 워크플로와의 호환성을 위해 내부 노드 ID는 `ImageList`로 유지됩니다.
 
 | 입력 | 타입 | 설명 |
 | --- | --- | --- |
