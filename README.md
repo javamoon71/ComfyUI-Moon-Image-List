@@ -1,58 +1,56 @@
 # ComfyUI Moon Image List
 
-여러 장의 이미지를 목록으로 관리하고, index 또는 랜덤으로 하나를 골라 출력하는 ComfyUI 커스텀 노드입니다. Load Image 노드를 여러 개 두는 대신 노드 하나로 이미지를 바꿔 가며 쓸 수 있습니다.
+여러 이미지를 한 노드에서 관리하고, 인덱스 또는 무작위로 선택한 이미지를 출력하는 ComfyUI 커스텀 노드입니다. 이미지마다 `Load Image` 노드를 추가하지 않아도 됩니다.
 
-[ComfyUI-Text-List](https://github.com/javamoon71/ComfyUI-Text-List)의 이미지 버전입니다.
+## 주요 기능
 
-## 기능
-
-- **이미지 추가**: `+ 이미지 추가` 버튼으로 고르거나, 이미지 파일을 노드 위에 끌어다 놓아(drag and drop) 여러 장을 한 번에 업로드합니다. 파일은 ComfyUI의 `input` 폴더에 저장됩니다.
-- **썸네일 목록**: 항목마다 번호, 썸네일, 파일 이름, 삭제 버튼이 보입니다. 항목이 많으면 노드 안에서 스크롤합니다.
-- **index 선택**: index 위젯은 이미지 수 범위 안에서만 움직입니다. 다른 노드에서 링크로 받은 index가 범위를 넘으면 이미지 수로 나눈 나머지를 씁니다(순환).
-- **랜덤 선택**: `random`을 On으로 두면 index를 무시하고 실행할 때마다 이미지 하나를 무작위로 고릅니다.
-- **출력 형식**: 기본 Load Image 노드와 같이 IMAGE와 MASK를 출력합니다. 알파 채널이 있으면 마스크로 씁니다.
+- **여러 이미지 관리**: 파일 선택 또는 노드에 드래그 앤 드롭해 이미지를 추가하고, 목록에서 개별 항목을 삭제할 수 있습니다.
+- **썸네일 미리보기**: 이미지 번호와 썸네일, 파일 이름을 노드 안에서 확인할 수 있습니다.
+- **인덱스 선택**: 0부터 시작하는 인덱스로 이미지를 선택합니다. 범위를 벗어난 인덱스는 목록 길이에 맞춰 순환합니다.
+- **무작위 선택**: `random`을 켜면 실행할 때마다 목록에서 이미지를 무작위로 선택합니다.
+- **IMAGE와 MASK 출력**: 선택된 이미지를 `IMAGE`로, 알파 채널을 `MASK`로 출력합니다.
 
 ## 설치
 
-ComfyUI의 `custom_nodes` 폴더에 저장소를 복제한 뒤 ComfyUI를 다시 시작합니다.
+ComfyUI를 종료한 뒤 저장소를 `custom_nodes` 폴더에 복제하고 ComfyUI를 다시 시작하세요.
 
 ```bash
 cd ComfyUI/custom_nodes
 git clone https://github.com/javamoon71/ComfyUI-Moon-Image-List.git
 ```
 
-추가로 설치할 Python 패키지는 없습니다.
+추가 Python 패키지는 필요하지 않습니다.
 
 ## 사용법
 
-노드 추가 메뉴에서 `moon`, `image`, `imagelist` 중 하나를 검색해 **Moon Image List (ImageList)** 노드를 추가합니다. 기존 워크플로와의 호환성을 위해 내부 노드 ID는 `ImageList`로 유지됩니다.
+1. ComfyUI에서 노드 검색을 열고 `moon`, `image` 또는 `imagelist`를 검색합니다.
+2. **Moon Image List (ImageList)** 노드를 추가합니다.
+3. **+ 이미지 추가**를 눌러 파일을 선택하거나 이미지 파일을 노드 위에 끌어다 놓습니다.
+4. `index`로 출력할 이미지를 선택하거나 `random`을 켭니다.
+5. `image` 또는 `mask` 출력을 원하는 노드에 연결합니다.
 
-| 입력 | 타입 | 설명 |
-| --- | --- | --- |
-| `images` | IMAGE_LIST | 이미지 목록 (노드 안의 목록 UI로 관리) |
-| `index` | INT | 출력할 이미지 번호 (0부터 시작) |
-| `random` | BOOLEAN | On이면 index 대신 무작위로 선택 |
+업로드한 이미지는 ComfyUI의 `input` 폴더에 저장됩니다. 노드의 이미지 목록은 워크플로에 저장됩니다.
 
-| 출력 | 타입 | 설명 |
-| --- | --- | --- |
-| `image` | IMAGE | 선택된 이미지 |
-| `mask` | MASK | 선택된 이미지의 알파 마스크 (알파가 없으면 빈 마스크) |
+## 입력 및 출력
 
-**팁**: index 위젯의 `control after generate`를 `increment`로 두면 큐를 실행할 때마다 다음 이미지로 넘어갑니다.
+| 구분 | 이름 | 타입 | 설명 |
+| --- | --- | --- | --- |
+| 입력 | `images` | `IMAGE_LIST` | 노드 UI에서 관리하는 이미지 목록 |
+| 입력 | `index` | `INT` | 출력할 이미지의 0부터 시작하는 인덱스 |
+| 입력 | `random` | `BOOLEAN` | 켜면 인덱스 대신 무작위로 이미지 선택 |
+| 출력 | `image` | `IMAGE` | 선택한 이미지 |
+| 출력 | `mask` | `MASK` | 알파 채널 마스크. 알파 채널이 없는 이미지는 빈 마스크를 출력 |
 
-목록이 비어 있거나 파일이 `input` 폴더에 없으면 실행할 때 에러가 납니다.
+**팁:** `index` 위젯의 `control after generate`를 `increment`로 설정하면 큐를 실행할 때마다 다음 이미지로 이동할 수 있습니다.
 
-## 테스트
+## 문제 해결
+
+- **노드를 찾을 수 없음:** 노드 검색에서 `moon`, `image`, `imagelist`를 검색하고, 설치 후 ComfyUI를 재시작했는지 확인하세요.
+- **이미지 로드 오류:** 목록에 등록된 이미지 파일이 ComfyUI의 `input` 폴더에 있는지 확인하세요.
+- **프론트엔드 UI가 갱신되지 않음:** ComfyUI를 재시작하고 브라우저를 새로고침하세요. 브라우저 캐시가 남아 있으면 강력 새로고침을 시도하세요.
+
+## 개발 및 테스트
 
 ```bash
 python -m unittest discover tests
-```
-
-## 구조
-
-```
-__init__.py         노드 등록
-nodes.py            이미지 선택과 로드 로직
-web/image_list.js   썸네일 목록과 업로드 UI (프론트엔드 확장)
-tests/              단위 테스트
 ```
