@@ -79,7 +79,7 @@
 - [x] README의 노드 이름, 섹션 제목·링크, `moon` 검색 버전 안내 정리
 - [x] 테스트 + 패키지 로드 확인
 - [x] 커밋
-- [ ] push (사용자 확인 후)
+- [x] push (ee993d7, GitHub 반영 확인)
 - [ ] ComfyUI PC에서 `moon` 검색에 네 노드가 나오는지 확인
 
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
