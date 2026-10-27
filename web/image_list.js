@@ -5,6 +5,7 @@ import { api } from "../../scripts/api.js";
 const THUMB_SIZE = 128;
 const ADD_BUTTON_HEIGHT = 30;
 const GAP = 4;
+const IMAGE_LIST_DRAG_TYPE = "application/x-comfyui-moon-image-list-item";
 
 function parseValue(value) {
   try {
@@ -34,6 +35,7 @@ async function uploadImage(file) {
 
 function createImageListWidget(node, inputName) {
   let items = [];
+  let draggedIndex = null;
 
   // 노드 높이는 사용자가 정한 대로 두고, 넘치는 항목은 list 안에서 스크롤한다. 추가 버튼은 list 아래에 고정한다
   const container = document.createElement("div");
@@ -80,9 +82,54 @@ function createImageListWidget(node, inputName) {
         `display:flex;align-items:center;gap:${GAP}px;flex-shrink:0;padding:2px;border-radius:4px;` +
         "border:1px solid var(--border-color);background:var(--comfy-input-bg);color:var(--input-text);";
 
+      row.addEventListener("dragstart", (e) => {
+        draggedIndex = i;
+        e.dataTransfer.setData(IMAGE_LIST_DRAG_TYPE, String(i));
+        e.dataTransfer.effectAllowed = "move";
+        e.stopPropagation();
+        row.style.opacity = "0.5";
+      });
+      row.addEventListener("dragend", () => {
+        draggedIndex = null;
+        row.style.opacity = "";
+        list.querySelectorAll("[data-drop-position]").forEach((el) => {
+          el.style.boxShadow = "";
+          delete el.dataset.dropPosition;
+        });
+      });
+      row.addEventListener("dragover", (e) => {
+        if (!e.dataTransfer.types.includes(IMAGE_LIST_DRAG_TYPE)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect = "move";
+        const after = e.clientY >= row.getBoundingClientRect().top + row.offsetHeight / 2;
+        row.dataset.dropPosition = after ? "after" : "before";
+        row.style.boxShadow = after
+          ? "inset 0 -3px 0 var(--input-text)"
+          : "inset 0 3px 0 var(--input-text)";
+      });
+      row.addEventListener("dragleave", (e) => {
+        if (row.contains(e.relatedTarget)) return;
+        row.style.boxShadow = "";
+        delete row.dataset.dropPosition;
+      });
+      row.addEventListener("drop", (e) => {
+        if (!e.dataTransfer.types.includes(IMAGE_LIST_DRAG_TYPE) || draggedIndex === null) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const after = e.clientY >= row.getBoundingClientRect().top + row.offsetHeight / 2;
+        const destination = i + (after ? 1 : 0);
+        const [item] = items.splice(draggedIndex, 1);
+        items.splice(destination > draggedIndex ? destination - 1 : destination, 0, item);
+        draggedIndex = null;
+        render();
+      });
+
       const label = document.createElement("span");
+      label.draggable = true;
+      label.title = "드래그하여 순서 변경";
       label.textContent = String(i);
-      label.style.cssText = "min-width:24px;text-align:right;opacity:0.7;font-size:12px;";
+      label.style.cssText = "min-width:24px;text-align:right;opacity:0.7;font-size:12px;cursor:grab;user-select:none;";
 
       const thumb = document.createElement("img");
       thumb.src = thumbnailUrl(item);
