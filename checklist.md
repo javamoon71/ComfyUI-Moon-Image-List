@@ -41,3 +41,18 @@
 - [x] 단위 테스트 (`tests/test_any_index_switch.py`)
 - [x] README 반영
 - [ ] ComfyUI PC에서 실제 동작 확인
+
+## Plan 5 — 저장소 이름 변경 (ComfyUI-Moon-Image-List → ComfyUI-Moon-Tools)
+- [x] GitHub 저장소 이름 변경 (사용자가 직접), 옛 주소 301 연결 확인
+- [x] README 제목, clone 주소 변경
+- [x] 프론트엔드 확장 이름 `ComfyUI-Moon-Tools.*`로 변경
+- [x] 로컬 git remote 주소 변경
+
+## Plan 6 — Text List 통합 (ComfyUI-Moon-Text-List → nodes)
+- [ ] `nodes/text_list.py`, `web/text_list.js`, `tests/test_text_list.py` 가져오기 (원본 1d8775a)
+- [ ] 등록 (`__init__.py`), 노드 키 `TextList`와 표시 이름 유지
+- [ ] README에 Text List 사용법과 예전 저장소에서 옮겨 오는 방법 추가
+- [ ] Text List의 checklist / context-notes 이어 붙이기
+- [ ] 테스트 + 패키지 로드 + JS 문법 검사
+- [ ] GitHub `ComfyUI-Moon-Tools`에 push
+- [ ] ComfyUI PC: 예전 `ComfyUI-Moon-Text-List` 폴더 삭제 후 세 노드 동작 확인

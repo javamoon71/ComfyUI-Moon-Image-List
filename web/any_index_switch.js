@@ -20,7 +20,7 @@ function syncValueInputs(node) {
 }
 
 app.registerExtension({
-  name: "ComfyUI-Moon-Image-List.AnyIndexSwitch",
+  name: "ComfyUI-Moon-Tools.AnyIndexSwitch",
   beforeRegisterNodeDef(nodeType, nodeData) {
     if (nodeData.name !== "AnyIndexSwitch") return;
     const onConnectionsChange = nodeType.prototype.onConnectionsChange;

@@ -39,3 +39,11 @@
 - **동적 입력(프론트엔드)**: `onConnectionsChange`에서 슬롯을 맞춘다. 끝에서만 추가/삭제해 이름이 value0부터 빈틈없이 이어지게 한다. 중간 빈 슬롯은 지우지 않는다. 링크를 같은 노드의 다른 슬롯으로 옮기면 끊기→연결이 연달아 일어나 중간에 슬롯을 지우면 대상 슬롯이 사라질 수 있으므로 `queueMicrotask`로 미룬다. 불러온 워크플로는 이미 정리된 모양이라 맞추기가 아무것도 바꾸지 않고, 노드 크기도 바뀔 때만 높이를 다시 맞춘다.
 - **V3 스키마(`io.Autogrow`)는 쓰지 않았다**: 최신 ComfyUI에는 동적 입력 기능이 있지만, 이 팩은 V1 방식이고 ComfyUI 밖 단위 테스트를 유지하려고 기존 방식을 따른다.
 - **노드 키 `AnyIndexSwitch`**: Image List와 같은 규칙(접두사 없음, 표시 이름에 키 표기).
+
+## 2026-10-27 저장소 이름 변경
+- **새 이름**: `ComfyUI-Moon-Tools` (사용자가 GitHub Settings에서 변경). 옛 주소 `ComfyUI-Moon-Image-List`는 301로 새 주소에 연결되고, 새 저장소의 main이 로컬 origin/main(d860827)과 같은 것을 확인했다.
+- **이유**: Text List를 합쳐 여러 노드를 담는 팩이 되므로(아래 "Text List 통합").
+- **바꾼 곳**: README 제목·clone 주소, 프론트엔드 확장 이름(`ComfyUI-Moon-Tools.ImageList`, `ComfyUI-Moon-Tools.AnyIndexSwitch`), 로컬 `origin` 주소.
+- **바꾸지 않은 곳**: 노드 키·표시 이름(워크플로 호환), Image List 드래그 MIME 타입(`application/x-comfyui-moon-image-list-item`, 위젯 내부 식별자), 로컬 폴더 이름.
+- **확장 이름 변경 영향**: 이 확장들은 설정을 저장하지 않아 잃는 값이 없다. ComfyUI 설정에서 확장을 꺼 두었다면 다시 켜진 상태가 된다(Text List 때와 같은 판단).
+- **프론트엔드 파일 경로**: ComfyUI는 `/extensions/<설치 폴더 이름>/...`으로 JS를 제공한다. 위 "drag and drop" 기록의 `/extensions/ComfyUI-Moon-Image-List/image_list.js`는 설치 폴더 이름을 따르므로, 새로 clone했다면 `/extensions/ComfyUI-Moon-Tools/image_list.js`다.

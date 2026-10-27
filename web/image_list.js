@@ -216,7 +216,7 @@ function createImageListWidget(node, inputName) {
 }
 
 app.registerExtension({
-  name: "ComfyUI-Moon-Image-List.ImageList",
+  name: "ComfyUI-Moon-Tools.ImageList",
   getCustomWidgets() {
     return {
       IMAGE_LIST: (node, inputName) => createImageListWidget(node, inputName),

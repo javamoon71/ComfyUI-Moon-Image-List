@@ -1,4 +1,4 @@
-# ComfyUI Moon Image List
+# ComfyUI Moon Tools
 
 여러 이미지를 한 노드에서 관리하고, 인덱스 또는 무작위로 선택한 이미지를 출력하는 ComfyUI 커스텀 노드입니다. 이미지마다 `Load Image` 노드를 추가하지 않아도 됩니다.
 
@@ -18,7 +18,7 @@ ComfyUI를 종료한 뒤 저장소를 `custom_nodes` 폴더에 복제하고 Comf
 
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/javamoon71/ComfyUI-Moon-Image-List.git
+git clone https://github.com/javamoon71/ComfyUI-Moon-Tools.git
 ```
 
 추가 Python 패키지는 필요하지 않습니다.
