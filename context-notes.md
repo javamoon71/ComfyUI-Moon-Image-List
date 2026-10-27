@@ -58,6 +58,16 @@
 - **Text List 기록**: 아래에 원래 context-notes를 그대로 붙였다. 파일 이름은 통합 전 기준이다(`nodes.py` = 지금의 `nodes/text_list.py`).
 - **README 팁 주의**: Text List 기록("GitHub 공개용 README + 라이선스")에 따르면 프론트엔드는 `control_after_generate` 옵션이 있거나 이름이 `seed`/`noise_seed`인 INT에만 control after generate를 붙인다. Image List README의 `index` increment 팁은 이 기준으로는 동작하지 않을 수 있다. 사용자 확인이 필요하다.
 
+## 2026-10-27 Moon Save Image 통합
+- **가져온 것**: ComfyUI-Moon-SaveImage의 마지막 커밋 596bb94에서 `nodes.py` → `nodes/save_image.py`, `tests/test_nodes.py` → `tests/test_save_image.py`. 노드 코드는 그대로다. 프론트엔드 JS는 원래 없다.
+- **테스트에서 바꾼 곳**: import 경로, 그리고 가짜 `folder_paths`를 `addCleanup`으로 되돌리는 한 줄. `test_image_list.py`는 import할 때 가짜 모듈을 한 번 넣고, Save Image 테스트는 `setUp`마다 덮어쓴다. discover는 알파벳 순서라 Image List가 먼저 돌아 통과하지만, Save Image 테스트를 먼저 실행하면(`python -m unittest tests.test_save_image tests.test_image_list`) Image List 테스트 4개가 `get_annotated_filepath` 없음으로 실패하는 것을 확인했다. `mock.patch.dict(sys.modules)`는 끝날 때 sys.modules 전체를 되돌려 테스트 중에 import된 PIL 플러그인 모듈까지 지우므로 쓰지 않았다.
+- **가져오지 않은 것**: `.vscode/settings.json`(VS Code unittest 탐색 설정). 이 저장소에는 지금까지 편집기 설정을 두지 않았다. git 이력도 Text List처럼 가져오지 않았다. 이전 이력은 GitHub의 ComfyUI-Moon-SaveImage 저장소에 남는다.
+- **노드 키·표시 이름·카테고리 유지**: `MoonSaveImage` / `Moon Save Image (MoonSaveImage)` / `image`. 다른 노드와 달리 키에 `Moon` 접두어가 있는 이유는 아래 Save Image 기록 참고(기본 `SaveImage`와 겹침).
+- **예전 팩과 함께 설치하면 안 된다**: 같은 `MoonSaveImage` 키가 두 번 등록되어 나중에 불러온 쪽이 덮어쓴다. JS가 없어 위젯이 두 번 붙는 문제는 없지만, 예전 쪽이 이기면 이 저장소의 수정이 반영되지 않는다. README에 예전 폴더를 지우라고 적었다.
+- **보안 섹션을 팩 수준으로 올렸다**: 이 팩의 다른 노드는 파일을 쓰지 않았지만, Save Image는 output 밖 저장을 허용한다. 팩을 설치하면 이 기능도 함께 들어오므로 README에 `## 보안`을 따로 두었다.
+- **README**: Text List 때와 같이 한국어 README.md 하나에 README.ko.md 내용을 넣었다. 영어 README는 가져오지 않았다. 설치·업데이트·삭제 안내는 팩 공통 내용과 겹쳐 뺐다.
+- **Save Image 기록**: 아래에 원래 context-notes를 그대로 붙였다. 파일 이름은 통합 전 기준이다(`nodes.py` = 지금의 `nodes/save_image.py`).
+
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 
 ### 2026-10-21 결정 사항
@@ -191,3 +201,24 @@
 - **확장 이름 변경 영향**: 확장 이름은 ComfyUI 안에서 확장을 구분하는 식별자다. 이 확장은 설정을 저장하지 않아 바꿔도 잃는 값이 없다. 사용자가 ComfyUI 설정에서 이 확장을 꺼 두었다면 다시 켜진 상태가 된다.
 - **GitHub 쪽**: 이 PC에 GitHub CLI·인증이 없어 저장소 이름 변경은 사용자가 Settings에서 한다. GitHub는 옛 주소를 새 주소로 자동 연결하므로 기존 설치본의 `git pull`도 계속 된다. 옛 이름으로 새 저장소를 만들면 이 연결이 끊긴다.
 - **기존 설치본**: 폴더 이름이 `ComfyUI-Text-List`로 남아도 동작한다. `WEB_DIRECTORY`가 상대 경로이고 JS도 `../../scripts/app.js`로 폴더 이름에 의존하지 않는다.
+
+## Moon Save Image (ComfyUI-Moon-SaveImage에서 통합)
+통합 전 저장소의 기록이다(마지막 커밋 596bb94). 파일 이름은 통합 전 기준이다.
+
+### 2026-10-27 결정 사항
+- **참고한 노드**: ComfyUI 기본 `SaveImage`(파일 이름 규칙, PNG 메타데이터, `ui.images` 미리보기), `SaveAnimatedWEBP`(WebP EXIF 메타데이터 형식), WAS `Image Save`(경로·형식·quality 옵션).
+- **노드 키 `MoonSaveImage`**: 다른 Moon 노드처럼 짧은 키를 쓰면 기본 노드 `SaveImage`와 겹쳐 덮어쓴다. 그래서 `Moon` 접두어를 붙였다.
+- **파일 이름**: 기본 SaveImage와 같은 `{prefix}_{counter:05}_.{ext}`. 번호는 폴더 안 같은 prefix 파일 중 가장 큰 번호 + 1이고, 형식(png/jpg/webp)과 상관없이 이어진다. `folder_paths.get_save_image_path`는 output 폴더 밖 저장을 막기 때문에 쓰지 않고 같은 규칙을 직접 구현했다.
+- **치환 토큰**: 기본 SaveImage의 `%date:yyyy-MM-dd%`는 프론트엔드가 정해진 노드(SaveImage 등)에만 적용한다. 커스텀 노드에는 적용되지 않으므로 Python에서 같은 형식(yyyy, yy, MM, M, dd, d, hh, h, mm, m, ss, s)으로 바꾼다. 서버 쪽 기본 토큰 중 `%width%`, `%height%`도 지원한다. `%노드이름.위젯%`은 지원하지 않는다.
+- **저장 경로**: `os.path.join(output, output_path, filename_prefix)`. output_path가 절대 경로면 그 위치, 상대 경로면 output 기준. filename_prefix 안의 하위 폴더(`sub/name`)도 기본 노드처럼 동작한다. 폴더는 자동 생성한다. 절대 경로를 허용하므로 공유 서버에서는 ComfyUI 프로세스가 쓸 수 있는 어디든 저장된다(README에 적음).
+- **메타데이터**: png는 기본 SaveImage처럼 텍스트 청크(`prompt`, `workflow`). webp는 SaveAnimatedWEBP처럼 EXIF `0x0110`=`prompt:{json}`, `0x010f`부터 내려가며 `workflow:{json}`. jpg는 넣지 않는다. JPEG EXIF는 64KB 제한이 있어 큰 워크플로가 저장 오류를 내기 때문이다(WAS도 jpg에는 넣지 않음). ComfyUI `--disable-metadata` 플래그는 보지 않고 노드의 On/Off만 따른다.
+- **jpg 알파**: RGBA(4채널) IMAGE가 들어오면 jpg만 RGB로 바꿔 저장한다.
+- **미리보기**: output 폴더 안에 저장하면 그 파일을 `type: output`으로 보여 준다. output 밖(절대 경로, `..`)이면 `/view`로 열 수 없어서 temp 폴더에 png 사본을 저장해 `type: temp`로 보여 준다(PreviewImage와 같은 방식, temp는 ComfyUI 시작 시 비워짐).
+- **출력**: 저장 후 입력 IMAGE를 그대로 내보내 다음 노드로 이을 수 있다. `OUTPUT_NODE = True`라서 출력을 연결하지 않아도 실행된다.
+- **folder_paths 지연 import**: Image List와 같은 이유. 테스트는 `sys.modules`에 가짜 모듈을 넣는다.
+
+### 2026-10-27 GitHub 공개 준비
+- **README 구성**: Text-List와 같이 영어 `README.md`를 기본으로, 한국어 `README.ko.md`를 따로 둔다. 설치(git clone, ComfyUI-Manager Git URL), 업데이트, 삭제, 입력/출력 표, 토큰, 형식별 메타데이터, 세부 동작 순서다.
+- **보안 섹션**: 기본 SaveImage와 달리 output 밖 저장을 허용하므로 공개 README에 따로 적었다.
+- **라이선스**: Moon 노드들과 같은 MIT, `Copyright (c) 2026 javamoon71`. 작업 폴더의 LICENSE가 CRLF여도 `core.autocrlf=true`라 저장소에는 LF로 커밋된다(`git show HEAD:LICENSE`로 확인). 따로 고칠 필요 없다.
+- **ComfyUI(GPL-3.0) 참고 범위**: 기본 노드의 동작 규칙(파일 이름 형식, PNG 텍스트 청크·WebP EXIF 키 배치, `ui.images` 형식)을 맞췄을 뿐 코드를 복사하지 않았다. 대부분의 커스텀 노드처럼 MIT로 배포한다.

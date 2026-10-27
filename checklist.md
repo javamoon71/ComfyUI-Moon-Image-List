@@ -57,6 +57,16 @@
 - [x] GitHub `ComfyUI-Moon-Tools`에 push, 새 주소로 clone 후 테스트 통과 확인
 - [ ] ComfyUI PC: 예전 `ComfyUI-Moon-Text-List` 폴더 삭제 후 세 노드 동작 확인
 
+## Plan 7 — Moon Save Image 통합 (ComfyUI-Moon-SaveImage → nodes)
+- [x] `nodes/save_image.py`, `tests/test_save_image.py` 가져오기 (원본 596bb94)
+- [x] 테스트의 가짜 `folder_paths`를 테스트가 끝나면 되돌리기 (Image List 테스트와 충돌 방지)
+- [x] 등록 (`__init__.py`), 노드 키 `MoonSaveImage`와 표시 이름 유지
+- [x] README에 Moon Save Image 사용법, 보안 주의, 예전 저장소에서 옮겨 오는 방법 추가
+- [x] Save Image의 checklist / context-notes 이어 붙이기
+- [x] 테스트(순서를 바꿔서도) + 패키지 로드 확인
+- [ ] GitHub `ComfyUI-Moon-Tools`에 push (사용자 확인 후)
+- [ ] ComfyUI PC: 예전 `ComfyUI-Moon-SaveImage` 폴더 삭제 후 네 노드 동작 확인
+
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 통합 전 저장소의 기록이다(마지막 커밋 1d8775a). 파일 이름은 통합 전 기준이다.
 
@@ -162,3 +172,27 @@
 - [x] 테스트 + JS 문법 검사
 - [x] GitHub 저장소 이름 변경 (사용자가 Settings에서 직접)
 - [x] push 후 새 주소로 clone 되는지 확인 (GitHub 라이선스 MIT 인식, 옛 주소 301 연결)
+
+## Moon Save Image (ComfyUI-Moon-SaveImage에서 통합)
+통합 전 저장소의 기록이다(마지막 커밋 596bb94). 파일 이름은 통합 전 기준이다.
+
+### Plan
+입력 IMAGE를 파일로 저장하는 ComfyUI 커스텀 노드. 기본 `SaveImage` 노드를 바탕으로 WAS `Image Save` 등의 자주 쓰는 옵션을 더한다.
+- 입력: images(IMAGE), filename_prefix(STRING, `%date:yyyy-MM-dd%`·`%width%`·`%height%` 치환), output_path(STRING, 비우면 output 폴더, 상대 경로는 output 기준, 절대 경로 허용), file_format(png/jpg/webp), quality(1~100, jpg·webp), save_metadata(On/Off)
+- 출력: images(IMAGE, 입력 그대로 통과) + 노드 안 미리보기
+
+### Tasks
+- [x] 프로젝트 폴더 생성, git 초기화
+- [x] 저장 로직 구현 (`nodes.py`)
+- [x] ComfyUI 등록 (`__init__.py`)
+- [x] 단위 테스트 작성 및 통과 (`tests/test_nodes.py`)
+- [x] VS Code 설정 (`.vscode/settings.json`, unittest 탐색)
+- [x] README, LICENSE 작성
+- [x] 커밋
+- [x] GitHub 저장소 생성 및 push
+- [ ] ComfyUI PC에서 실제 동작 확인 (png/jpg/webp 저장, 워크플로 드래그 복원, 절대 경로 미리보기)
+
+### Plan 2 — GitHub 공개 준비
+- [x] README 공개용으로 정리: 영어 `README.md` + 한국어 `README.ko.md` (Text-List 구성)
+- [x] LICENSE(MIT, javamoon71) 확인
+- [ ] 저장소 공개 후 README 스크린샷 추가 (ComfyUI에서 노드 화면 캡처)

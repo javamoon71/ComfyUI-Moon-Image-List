@@ -1,12 +1,13 @@
 # ComfyUI Moon Tools
 
-이미지·텍스트 목록을 노드 하나에서 관리하고, 인덱스나 무작위로 하나를 골라 출력하는 ComfyUI 커스텀 노드 모음입니다.
+이미지·텍스트 목록을 노드 하나에서 관리하고, 인덱스나 무작위로 하나를 골라 출력하는 ComfyUI 커스텀 노드 모음입니다. 이미지를 원하는 폴더와 형식으로 저장하는 노드도 들어 있습니다.
 
 | 노드 | 설명 |
 | --- | --- |
 | [Moon Image List](#moon-image-list) | 여러 이미지를 한 노드에서 관리하고, 인덱스 또는 무작위로 선택한 이미지를 출력 |
 | [Text List](#text-list) | 여러 텍스트(프롬프트, 스타일, 캡션 등)를 목록으로 담아 두고, 인덱스 또는 무작위로 선택한 텍스트를 출력 |
 | [Moon Any Index Switch](#moon-any-index-switch) | 어떤 타입의 값이든 여러 개 연결하고, 인덱스로 고른 값 하나를 출력 |
+| [Moon Save Image](#moon-save-image) | 이미지를 PNG, JPG, WebP로 저장하고, 저장 폴더·품질·메타데이터 포함 여부를 선택 |
 
 ## 설치
 
@@ -30,10 +31,11 @@ git pull
 
 ### 예전 저장소에서 옮겨 오기
 
-이 저장소는 `ComfyUI-Moon-Image-List`에서 이름이 바뀌었고, `ComfyUI-Moon-Text-List`의 Text List 노드를 합쳤습니다. 노드 이름은 그대로라 저장된 워크플로는 그대로 열립니다.
+이 저장소는 `ComfyUI-Moon-Image-List`에서 이름이 바뀌었고, `ComfyUI-Moon-Text-List`의 Text List 노드와 `ComfyUI-Moon-SaveImage`의 Moon Save Image 노드를 합쳤습니다. 노드 이름은 그대로라 저장된 워크플로는 그대로 열립니다.
 
 - **`ComfyUI-Moon-Image-List`를 설치했다면:** 그 폴더에서 `git pull`을 실행하세요. 옛 주소는 새 주소로 자동 연결됩니다.
 - **`ComfyUI-Moon-Text-List`를 설치했다면:** 이 저장소를 설치한 뒤 `ComfyUI-Moon-Text-List` 폴더를 지우세요. 두 폴더가 함께 있으면 Text List 노드가 두 번 등록되어 서로 덮어씁니다.
+- **`ComfyUI-Moon-SaveImage`를 설치했다면:** 이 저장소를 설치한 뒤 `ComfyUI-Moon-SaveImage` 폴더를 지우세요. 두 폴더가 함께 있으면 Moon Save Image 노드가 두 번 등록되어 서로 덮어씁니다.
 
 ## Moon Image List
 
@@ -134,14 +136,87 @@ git pull
 | 입력 | `value0`, `value1`, … | 모든 타입 | 고를 값들. 연결하면 다음 입력이 추가됨 |
 | 출력 | `value` | 모든 타입 | 선택한 입력의 값 |
 
+## Moon Save Image
+
+이미지를 PNG, JPG, WebP 파일로 저장합니다. 기본 **Save Image** 노드처럼 쓰면서 저장 폴더, 파일 형식, 품질을 고르고, 메타데이터 포함 여부를 정할 수 있습니다. 이미지 출력이 있어서 다음 노드로 이어서 연결할 수도 있습니다.
+
+### 기능
+
+- **파일 형식**: PNG, JPG, WebP 중 하나로 저장합니다. JPG와 WebP는 `quality`로 품질을 정합니다.
+- **저장 폴더**: `output_path`를 비워 두면 ComfyUI `output` 폴더에 저장합니다. 상대 경로는 `output` 아래에, 절대 경로는 그 위치에 저장하고, 없는 폴더는 만듭니다.
+- **파일 이름 토큰**: `filename_prefix`와 `output_path`에 `%date:yyyy-MM-dd%`, `%width%`, `%height%`를 쓸 수 있습니다.
+- **메타데이터 On/Off**: `save_metadata`를 켜면 프롬프트와 워크플로를 파일에 넣습니다. 저장한 PNG나 WebP를 ComfyUI에 끌어다 놓으면 워크플로가 다시 열립니다.
+- **미리보기**: 저장한 이미지를 노드 안에서 보여 줍니다. `output` 폴더 밖에 저장해도 보입니다.
+- **이미지 통과 출력**: `images` 출력은 입력 이미지를 그대로 내보내므로 워크플로 중간에 둘 수 있습니다.
+- **덮어쓰기 없음**: 기본 노드처럼 번호를 붙이고(`ComfyUI_00001_.png`), 폴더에 있는 가장 큰 번호 다음부터 이어 갑니다.
+
+### 사용법
+
+노드 추가 메뉴의 **image → Moon Save Image (MoonSaveImage)**에서 추가하거나, 캔버스를 더블클릭하고 `moon save image`를 검색합니다.
+
+1. `images`에 이미지를 연결합니다.
+2. `filename_prefix`, `output_path`, `file_format`, `quality`를 정합니다.
+3. 워크플로를 실행합니다. 저장한 이미지가 노드에 나타납니다.
+
+예를 들어 `output_path`를 `%date:yyyy-MM-dd%`로, `filename_prefix`를 `portrait`로 두면 `output/2026-10-27/portrait_00001_.png`에 저장됩니다.
+
+### 입력
+
+| 입력 | 타입 | 설명 |
+| --- | --- | --- |
+| `images` | IMAGE | 저장할 이미지. 배치면 모두 저장 |
+| `filename_prefix` | STRING | 파일 이름 앞부분. `portraits/test`처럼 폴더 포함 가능 |
+| `output_path` | STRING | 저장 폴더. 비우면 `output`, 상대 경로는 `output` 아래, 절대 경로는 그대로 |
+| `file_format` | `png` / `jpg` / `webp` | 파일 형식 |
+| `quality` | INT | JPG, WebP 품질 1~100 (기본 95). PNG에는 적용되지 않음 |
+| `save_metadata` | BOOLEAN | On이면 프롬프트와 워크플로를 파일에 넣음 |
+
+### 출력
+
+| 출력 | 타입 | 설명 |
+| --- | --- | --- |
+| `images` | IMAGE | 입력 이미지를 그대로 출력 |
+
+### 파일 이름 토큰
+
+| 토큰 | 예 | 결과 |
+| --- | --- | --- |
+| `%date:형식%` | `%date:yyyy-MM-dd%` | `2026-10-27` |
+| `%width%`, `%height%` | `%width%x%height%` | `1024x768` |
+
+날짜 형식에는 기본 Save Image 노드와 같은 `yyyy`, `yy`, `MM`, `M`, `dd`, `d`, `hh`, `h`, `mm`, `m`, `ss`, `s`를 씁니다. `hh`는 24시간제입니다. 그 밖의 `%...%`는 바꾸지 않고 그대로 둡니다.
+
+### 형식별 메타데이터
+
+| 형식 | 저장 위치 | 비고 |
+| --- | --- | --- |
+| PNG | 텍스트 청크(`prompt`, `workflow`) | 기본 Save Image와 같음 |
+| WebP | EXIF | 기본 SaveAnimatedWEBP와 같음 |
+| JPG | 저장하지 않음 | JPEG EXIF는 64KB 제한이 있어 대부분의 워크플로를 담을 수 없음 |
+
+### 세부 동작
+
+- 파일 이름은 `{filename_prefix}_{번호}_.{확장자}`이고 번호는 5자리입니다. 같은 폴더에서는 형식이 달라도 번호가 이어집니다.
+- JPG는 투명도를 지원하지 않으므로 알파 채널이 있는 이미지는 RGB로 저장합니다.
+- WebP는 quality가 100이어도 손실 압축으로 저장합니다.
+- ComfyUI 실행 옵션 `--disable-metadata`는 이 노드에 적용되지 않습니다. 대신 `save_metadata`를 쓰세요.
+- `output` 밖에 저장한 이미지는 미리보기용 사본이 ComfyUI `temp` 폴더에 저장됩니다. `temp` 폴더는 ComfyUI를 시작할 때 비워집니다.
+
+## 보안
+
+기본 Save Image 노드는 `output` 폴더 밖에 저장하지 못하게 막습니다. Moon Save Image는 절대 경로와 `..`을 허용하므로, ComfyUI 서버에서 워크플로를 실행할 수 있는 사람은 ComfyUI 프로세스가 쓸 수 있는 모든 위치에 이미지 파일을 저장할 수 있습니다. 여러 사람이 쓰는 서버에 이 팩을 설치할 때는 이 점을 고려하세요.
+
 ## 문제 해결
 
 - **노드를 찾을 수 없음:** 노드 검색에서 `moon`, `image`, `imagelist`를 검색하고, 설치 후 ComfyUI를 재시작했는지 확인하세요.
 - **이미지 로드 오류:** 목록에 등록된 이미지 파일이 ComfyUI의 `input` 폴더에 있는지 확인하세요.
 - **프론트엔드 UI가 갱신되지 않음:** ComfyUI를 재시작하고 브라우저를 새로고침하세요. 브라우저 캐시가 남아 있으면 강력 새로고침을 시도하세요.
 - **Text List가 이상하게 동작함:** `custom_nodes`에 예전 `ComfyUI-Moon-Text-List` 폴더가 남아 있는지 확인하세요. [예전 저장소에서 옮겨 오기](#예전-저장소에서-옮겨-오기)를 참고하세요.
+- **저장한 이미지에서 워크플로가 열리지 않음:** Moon Save Image의 `save_metadata`가 켜져 있는지, 형식이 PNG나 WebP인지 확인하세요.
 
 ## 개발 및 테스트
+
+테스트에는 ComfyUI가 이미 설치하는 `torch`, `numpy`, `Pillow`가 필요합니다.
 
 ```bash
 python -m unittest discover tests
