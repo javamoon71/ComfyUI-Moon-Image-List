@@ -54,7 +54,7 @@
 - [x] README에 Text List 사용법과 예전 저장소에서 옮겨 오는 방법 추가
 - [x] Text List의 checklist / context-notes 이어 붙이기
 - [x] 테스트 + 패키지 로드 + JS 문법 검사
-- [ ] GitHub `ComfyUI-Moon-Tools`에 push
+- [x] GitHub `ComfyUI-Moon-Tools`에 push, 새 주소로 clone 후 테스트 통과 확인
 - [ ] ComfyUI PC: 예전 `ComfyUI-Moon-Text-List` 폴더 삭제 후 세 노드 동작 확인
 
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
