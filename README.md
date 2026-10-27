@@ -5,7 +5,7 @@ ComfyUI 커스텀 노드 모음입니다. 이미지·텍스트 목록에서 인�
 | 노드 | 설명 |
 | --- | --- |
 | [Moon Image List](#moon-image-list) | 여러 이미지를 한 노드에서 관리하고, 인덱스 또는 무작위로 선택한 이미지를 출력 |
-| [Text List](#text-list) | 여러 텍스트(프롬프트, 스타일, 캡션 등)를 목록으로 담아 두고, 인덱스 또는 무작위로 선택한 텍스트를 출력 |
+| [Moon Text List](#moon-text-list) | 여러 텍스트(프롬프트, 스타일, 캡션 등)를 목록으로 담아 두고, 인덱스 또는 무작위로 선택한 텍스트를 출력 |
 | [Moon Any Index Switch](#moon-any-index-switch) | 어떤 타입의 값이든 여러 개 연결하고, 인덱스로 고른 값 하나를 출력 |
 | [Moon Save Image](#moon-save-image) | 이미지를 PNG, JPG, WebP로 저장하고, 저장 폴더·품질·메타데이터 포함 여부를 선택 |
 
@@ -31,10 +31,10 @@ git pull
 
 ### 예전 저장소에서 옮겨 오기
 
-이 저장소는 `ComfyUI-Moon-Image-List`에서 이름이 바뀌었고, `ComfyUI-Moon-Text-List`의 Text List 노드와 `ComfyUI-Moon-SaveImage`의 Moon Save Image 노드를 합쳤습니다. 노드 이름은 그대로라 저장된 워크플로는 그대로 열립니다.
+이 저장소는 `ComfyUI-Moon-Image-List`에서 이름이 바뀌었고, `ComfyUI-Moon-Text-List`의 Text List 노드와 `ComfyUI-Moon-SaveImage`의 Moon Save Image 노드를 합쳤습니다. 노드 키는 그대로라 저장된 워크플로는 그대로 열립니다. Text List는 표시 이름만 **Moon Text List (TextList)**로 바뀌었습니다.
 
 - **`ComfyUI-Moon-Image-List`를 설치했다면:** 그 폴더에서 `git pull`을 실행하세요. 옛 주소는 새 주소로 자동 연결됩니다.
-- **`ComfyUI-Moon-Text-List`를 설치했다면:** 이 저장소를 설치한 뒤 `ComfyUI-Moon-Text-List` 폴더를 지우세요. 두 폴더가 함께 있으면 Text List 노드가 두 번 등록되어 서로 덮어씁니다.
+- **`ComfyUI-Moon-Text-List`를 설치했다면:** 이 저장소를 설치한 뒤 `ComfyUI-Moon-Text-List` 폴더를 지우세요. 두 폴더가 함께 있으면 Moon Text List 노드가 두 번 등록되어 서로 덮어씁니다.
 - **`ComfyUI-Moon-SaveImage`를 설치했다면:** 이 저장소를 설치한 뒤 `ComfyUI-Moon-SaveImage` 폴더를 지우세요. 두 폴더가 함께 있으면 Moon Save Image 노드가 두 번 등록되어 서로 덮어씁니다.
 
 ## Moon Image List
@@ -72,7 +72,7 @@ git pull
 
 **팁:** `index` 위젯의 `control after generate`를 `increment`로 설정하면 큐를 실행할 때마다 다음 이미지로 이동할 수 있습니다.
 
-## Text List
+## Moon Text List
 
 여러 개의 텍스트(프롬프트, 스타일, 캡션 등)를 노드 하나에 목록으로 담아 두고, index나 랜덤으로 하나를 골라 출력합니다. 항목마다 짧은 제목을 붙일 수 있고, 전체 목록도 리스트로 출력합니다.
 
@@ -86,9 +86,7 @@ git pull
 
 ### 사용법
 
-노드 추가 메뉴의 **utils/text → Text List**에서 추가하거나, 캔버스를 더블클릭해 `text list`, `textlist`, `text`, `moon` 중 하나로 검색합니다.
-
-> `moon` 검색은 검색 별칭이 추가된 2026년 1월 말 이후의 ComfyUI에서 됩니다. 그 전 버전에서는 `text list`로 찾을 수 있습니다.
+노드 추가 메뉴의 **utils/text → Moon Text List (TextList)**에서 추가하거나, 캔버스를 더블클릭해 `moon`, `text list`, `textlist`, `text` 중 하나로 검색합니다.
 
 1. **+ 항목 추가**를 눌러 제목과 내용을 입력합니다.
 2. `index`로 원하는 항목을 고르거나 `random`을 On으로 둡니다.
@@ -208,10 +206,10 @@ git pull
 
 ## 문제 해결
 
-- **노드를 찾을 수 없음:** 노드 검색에서 `moon`을 검색하면 네 노드가 모두 나옵니다. 설치 후 ComfyUI를 재시작했는지 확인하세요. 2026년 1월 말 이전의 ComfyUI에서는 Text List가 `moon`으로 찾히지 않으니 `text list`로 검색하세요.
+- **노드를 찾을 수 없음:** 노드 검색에서 `moon`을 검색하면 네 노드가 모두 나옵니다. 설치 후 ComfyUI를 재시작했는지 확인하세요.
 - **이미지 로드 오류:** 목록에 등록된 이미지 파일이 ComfyUI의 `input` 폴더에 있는지 확인하세요.
 - **프론트엔드 UI가 갱신되지 않음:** ComfyUI를 재시작하고 브라우저를 새로고침하세요. 브라우저 캐시가 남아 있으면 강력 새로고침을 시도하세요.
-- **Text List나 Moon Save Image가 이상하게 동작함:** `custom_nodes`에 예전 `ComfyUI-Moon-Text-List`나 `ComfyUI-Moon-SaveImage` 폴더가 남아 있는지 확인하세요. [예전 저장소에서 옮겨 오기](#예전-저장소에서-옮겨-오기)를 참고하세요.
+- **Moon Text List나 Moon Save Image가 이상하게 동작함:** `custom_nodes`에 예전 `ComfyUI-Moon-Text-List`나 `ComfyUI-Moon-SaveImage` 폴더가 남아 있는지 확인하세요. [예전 저장소에서 옮겨 오기](#예전-저장소에서-옮겨-오기)를 참고하세요.
 - **저장한 이미지에서 워크플로가 열리지 않음:** Moon Save Image의 `save_metadata`가 켜져 있는지, 형식이 PNG나 WebP인지 확인하세요.
 
 ## 개발 및 테스트

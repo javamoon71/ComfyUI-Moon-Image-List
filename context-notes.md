@@ -71,7 +71,14 @@
 ## 2026-10-27 저장소 설명 갱신
 - **GitHub About**: Image List 시절 문구("manage multiple images as a list and output one by index or random")가 남아 있었다. 새 문구는 `ComfyUI custom nodes: image and text lists that output one item by index or random, an any-type index switch, and an image saver with format, folder, and metadata options`. 이 PC에는 `gh`·인증이 없어 사용자가 Settings에서 직접 바꾼다.
 - **README 첫 문단**: 위 문구와 같은 순서(목록 → 스위치 → 저장)로 네 노드를 모두 소개한다. 이전 문단에는 Any Index Switch가 빠져 있었다.
-- **노드 검색 안내**: 세 노드는 표시 이름에 `Moon`이 있고 Text List는 `SEARCH_ALIASES`의 `moon`으로 찾히므로, 문제 해결에서는 `moon` 하나로 안내한다. 별칭을 지원하지 않는 예전 ComfyUI(bdeac88 이전)에서는 Text List만 `text list`로 찾아야 한다.
+- **노드 검색 안내**: 세 노드는 표시 이름에 `Moon`이 있고 Text List는 `SEARCH_ALIASES`의 `moon`으로 찾히므로, 문제 해결에서는 `moon` 하나로 안내한다. 별칭을 지원하지 않는 예전 ComfyUI(bdeac88 이전)에서는 Text List만 `text list`로 찾아야 한다. → 아래 "Moon Text List 표시 이름"으로 바뀌었다.
+
+## 2026-10-27 Moon Text List 표시 이름
+- **변경**: `TextList` 표시 이름 `Text List` → `Moon Text List (TextList)` (사용자 요청). ComfyUI PC의 `moon` 검색 화면에 다른 세 노드만 보였다. 다른 노드와 같은 `Moon ... (키)` 형식이다. Text List 기록의 "display_name을 Moon Text List로 바꾸지 않은 이유"는 이걸로 바뀌었다.
+- **노드 키·카테고리·별칭은 그대로**: `TextList`, `utils/text`, `SEARCH_ALIASES`. 별칭의 `moon`은 이제 표시 이름과 겹치지만, 사용자가 요청해 넣은 목록이라 그대로 둔다.
+- **기존 워크플로의 노드 제목**: 프론트엔드(ComfyUI_frontend main, 2026-10-27)의 `litegraphService.ts`가 노드 클래스 기본 제목을 `display_name`으로 정한다. `LGraphNode.serialize`는 제목이 기본 제목과 다를 때만 저장하고, `configure`는 저장된 제목이 없으면 기본 제목을 쓴다. 그래서 기본 제목 그대로였던 노드는 다시 열면 새 이름으로 보이고, 사용자가 바꾼 제목은 유지된다. 링크와 위젯 값은 노드 키 기준이라 영향이 없다.
+- **README**: 노드 이름, 섹션 제목(`#moon-text-list`), 검색어 순서를 바꿨다. `moon`이 표시 이름으로 찾히므로 "2026년 1월 말 이후 ComfyUI에서만 된다"는 안내 두 곳을 지웠다.
+- **노드 배지 관찰**: 같은 스크린샷에서 Moon Save Image, Moon Image List, Moon Any Index Switch의 출처 배지가 모두 `comfyui-workflow…`로 보였다. Text List 기록의 "`comfyui-workflow-encrypt` 배지 = `TextList` 키 충돌 가능성"과 달리, Text List만의 문제는 아닌 것으로 보인다. 원인(설치 폴더 이름, 다른 팩 등)은 확인하지 않았다.
 
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 

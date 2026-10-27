@@ -12,7 +12,7 @@ NODE_CLASS_MAPPINGS = {
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "ImageList": "Moon Image List (ImageList)",
-    "TextList": "Text List",
+    "TextList": "Moon Text List (TextList)",
     "AnyIndexSwitch": "Moon Any Index Switch (AnyIndexSwitch)",
     "MoonSaveImage": "Moon Save Image (MoonSaveImage)",
 }

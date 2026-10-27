@@ -73,6 +73,15 @@
 - [x] 문제 해결: 노드 검색은 `moon`으로 안내, 예전 폴더 충돌에 Save Image 추가
 - [x] GitHub에 push (a28db61, raw 파일로 반영 확인)
 
+## Plan 9 — Text List 표시 이름을 Moon Text List로
+다른 세 노드처럼 `moon` 검색에 표시 이름으로 걸리게 한다. 노드 키 `TextList`는 그대로 둔다.
+- [x] 표시 이름 `Text List` → `Moon Text List (TextList)` (`__init__.py`)
+- [x] README의 노드 이름, 섹션 제목·링크, `moon` 검색 버전 안내 정리
+- [x] 테스트 + 패키지 로드 확인
+- [x] 커밋
+- [ ] push (사용자 확인 후)
+- [ ] ComfyUI PC에서 `moon` 검색에 네 노드가 나오는지 확인
+
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 통합 전 저장소의 기록이다(마지막 커밋 1d8775a). 파일 이름은 통합 전 기준이다.
 
