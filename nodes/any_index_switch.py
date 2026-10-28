@@ -41,8 +41,10 @@ class AnyIndexSwitch:
     RETURN_NAMES = ("value", "index")
     FUNCTION = "switch"
     CATEGORY = "utils"
-    # 리스트 입력이 있어도 항목마다 실행하지 않고 한 번만 실행해 출력이 1개가 되게 한다. 모든 입력이 리스트로 들어온다
+    # 리스트 입력이 있어도 항목마다 실행하지 않고 한 번만 실행한다. 모든 입력이 리스트로 들어온다.
+    # value는 선택된 입력의 리스트 전체를 그대로 내보내고, index는 값 하나만 내보낸다
     INPUT_IS_LIST = True
+    OUTPUT_IS_LIST = (True, False)
 
     @staticmethod
     def pick(index, values):
@@ -53,11 +55,12 @@ class AnyIndexSwitch:
         return names[index % len(names)]
 
     def check_lazy_status(self, index, **values):
-        # 아직 실행되지 않은 lazy 입력은 (None,)으로 들어온다. 선택된 입력만 실행을 요청한다
+        # 아직 실행되지 않은 lazy 입력은 (None,)으로 들어온다. 선택된 입력만 실행을 요청한다.
+        # 실행된 빈 리스트도 요청 대상이 되지만 ComfyUI가 이미 실행된 입력은 걸러 준다
         name = self.pick(index[0], values)
-        return [name] if values[name][0] is None else []
+        return [name] if all(item is None for item in values[name]) else []
 
     def switch(self, index, **values):
-        # 선택된 입력이 리스트여도 첫 항목 하나만 낸다
+        # 선택된 입력의 리스트 전체를 낸다. 일반 입력은 항목 1개짜리 리스트라 값 하나가 나간다
         # 출력 index는 순환한 뒤 실제로 고른 번호(연결된 입력 기준 0 ~ 개수-1)다. 슬롯 번호(value2의 2)가 아니다
-        return values[self.pick(index[0], values)][0], index[0] % len(values)
+        return values[self.pick(index[0], values)], index[0] % len(values)

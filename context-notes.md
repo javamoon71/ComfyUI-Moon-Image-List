@@ -121,6 +121,19 @@
 - **바뀌는 동작**: 리스트를 일부러 넘기던 경우(예: Text List `text_list` → 스위치 → 항목마다 실행)는 이제 첫 항목만 나간다. 리스트 전체를 넘기려면 `OUTPUT_IS_LIST = (True, False)`로 선택된 리스트를 그대로 내면 되지만, 사용자 요청(출력 1개)과 달라 쓰지 않았다. IMAGE 배치는 리스트 항목 하나(텐서)라 영향이 없다.
 - **빈 리스트**: 선택된 입력이 빈 리스트면 `[0]`에서 IndexError가 난다. 고치기 전에도 `slice_dict`의 `v[-1]`에서 같은 에러가 났으므로 그대로 둔다.
 
+## 2026-10-28 value는 리스트 전체, index만 값 하나
+- **사용자 정정**: "출력은 항상 1개"는 `index`에만 해당한다. `value`는 선택된 입력의 리스트(배열) 전체를 내보내야 한다. 위 "출력을 항상 1개로"의 "선택된 입력은 첫 항목만"과 "OUTPUT_IS_LIST는 두지 않는다"는 이걸로 바뀌었다.
+- **방식**: `INPUT_IS_LIST = True`는 그대로 두고 `OUTPUT_IS_LIST = (True, False)`를 더했다. `switch`는 선택된 입력의 리스트를 그대로 돌려준다. ComfyUI `merge_result_data`는 True인 출력을 펼쳐 이어 붙이고 False인 출력은 실행 결과마다 하나씩 모은다. 노드는 한 번만 실행되므로 `value`는 리스트 전체, `index`는 값 하나다.
+- **일반 입력**: 리스트가 아닌 값은 항목 1개짜리 리스트로 들어와 그대로 1개짜리 리스트로 나가므로 예전과 같다. IMAGE 배치도 리스트 항목 하나(텐서)라 배치 그대로 나간다.
+- **lazy 판정**: `values[name][0] is None`은 실행된 빈 리스트에서 IndexError가 나므로 `all(item is None for item in values[name])`로 바꿨다. 빈 리스트면 다시 요청하지만 ComfyUI가 `x in missing_keys`로 걸러 준다(execution.py 516줄 부근). `None in 리스트`는 numpy 배열 같은 항목에서 비교 에러가 날 수 있어 쓰지 않았다.
+- **빈 리스트**: 선택된 입력이 빈 리스트면 `value`는 빈 리스트, `index`는 값 하나로 나간다(예전처럼 IndexError가 나지 않는다).
+- **슬롯 모양**: `OUTPUT_IS_LIST`가 True인 출력은 프론트엔드에서 리스트 모양 슬롯으로 보일 수 있다. 동작에는 영향이 없다.
+- **확인 방법**: ComfyUI master `execution.py`(2026-10-27)에서 `_async_map_node_over_list`와 `merge_result_data`를 그대로 꺼내 세 버전을 돌렸다(임시 스크립트, 저장소에는 넣지 않음). 선택된 입력이 항목 4개 리스트일 때의 결과는 다음과 같다.
+  - 46b6ab3: value 4개, index `[1, 1, 1, 1]`
+  - 9369b3a: value `['x']`, index `[1]`
+  - 이번: value 4개, index `[1]`
+  - 일반 값 하나일 때는 세 버전이 같았다.
+
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 
 ### 2026-10-21 결정 사항

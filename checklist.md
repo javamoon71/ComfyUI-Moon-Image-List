@@ -114,7 +114,16 @@ increment는 마지막 다음 0, decrement는 0 다음 마지막, randomize는 0
 - [x] README, context-notes 반영
 - [x] 커밋
 - [x] push (9369b3a)
-- [ ] ComfyUI PC에서 미리보기에 값이 한 줄만 나오는지 확인
+- [ ] ComfyUI PC에서 미리보기에 값이 한 줄만 나오는지 확인 → Plan 14로 바뀜
+
+## Plan 14 — value는 리스트 전체, index만 값 하나
+사용자 정정: 값 하나만 내야 하는 것은 `index`이고, `value`는 선택된 리스트 전체를 내야 한다.
+- [x] `OUTPUT_IS_LIST = (True, False)`, `switch`가 선택된 리스트를 그대로 반환 (`nodes/any_index_switch.py`)
+- [x] lazy 판정이 빈 리스트에서 에러 나지 않게 (`all(item is None ...)`)
+- [x] 테스트 수정 + ComfyUI `execution.py` 실행 함수로 버전별 출력 비교
+- [x] README, context-notes 반영
+- [x] 커밋, push
+- [ ] ComfyUI PC: 리스트 입력에서 value 미리보기는 항목 전체, index 미리보기는 한 줄인지 확인
 
 ## Text List (ComfyUI-Moon-Text-List에서 통합)
 통합 전 저장소의 기록이다(마지막 커밋 1d8775a). 파일 이름은 통합 전 기준이다.
