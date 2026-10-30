@@ -1,6 +1,6 @@
 # ComfyUI Moon Tools
 
-ComfyUI 커스텀 노드 모음입니다. 이미지·텍스트 목록에서 인덱스나 무작위로 하나를 골라 출력하는 노드, 어떤 타입의 값이든 인덱스로 하나를 고르는 스위치, 형식·폴더·메타데이터를 고를 수 있는 이미지 저장 노드가 들어 있습니다.
+ComfyUI 커스텀 노드 모음입니다. 이미지·텍스트 목록에서 인덱스나 무작위로 하나를 골라 출력하는 노드, 어떤 타입의 값이든 인덱스로 하나를 고르는 스위치, 형식·폴더·메타데이터를 고를 수 있는 이미지 저장 노드, 배경을 지워 투명 이미지를 만드는 노드가 들어 있습니다.
 
 | 노드 | 설명 |
 | --- | --- |
@@ -8,6 +8,7 @@ ComfyUI 커스텀 노드 모음입니다. 이미지·텍스트 목록에서 인�
 | [Moon Text List](#moon-text-list) | 여러 텍스트(프롬프트, 스타일, 캡션 등)를 목록으로 담아 두고, 인덱스 또는 무작위로 선택한 텍스트를 출력 |
 | [Moon Any Index Switch](#moon-any-index-switch) | 어떤 타입의 값이든 여러 개 연결하고, 인덱스로 고른 값 하나를 출력 |
 | [Moon Save Image](#moon-save-image) | 이미지를 PNG, JPG, WebP로 저장하고, 저장 폴더·품질·메타데이터 포함 여부를 선택 |
+| [Moon Remove Background](#moon-remove-background) | 기본 배경 제거 모델로 피사체 마스크와 배경이 투명한 이미지를 함께 출력 |
 
 ## 설치
 
@@ -208,16 +209,52 @@ git pull
 - ComfyUI 실행 옵션 `--disable-metadata`는 이 노드에 적용되지 않습니다. 대신 `save_metadata`를 쓰세요.
 - `output` 밖에 저장한 이미지는 미리보기용 사본이 ComfyUI `temp` 폴더에 저장됩니다. `temp` 폴더는 ComfyUI를 시작할 때 비워집니다.
 
+## Moon Remove Background
+
+ComfyUI 기본 **Remove Background**(배경 제거) 노드 대신 쓰는 노드입니다. 입력과 `mask` 출력은 기본 노드와 같고, 배경이 투명한 이미지(RGBA)를 `image`로 하나 더 출력합니다. [HF Space background-removal](https://huggingface.co/spaces/hf-applications/background-removal)처럼 BiRefNet이 만든 마스크를 원본의 알파 채널로 붙입니다.
+
+- **기본 노드와 바꿔 끼우기**: 기본 Remove Background를 지우고 이 노드를 같은 자리에 둔 뒤, `bg_removal_model`과 `image`를 그대로 연결합니다. `mask` 출력도 기본 노드와 같은 값이라 뒤쪽 연결을 그대로 옮기면 됩니다.
+- **투명 배경 이미지 바로 출력**: `image` 출력은 기본 노드 뒤에 **Invert Mask**(마스크 반전)와 **Join Image with Alpha**(알파와 함께 이미지 합치기)를 이어 만든 결과와 같습니다. 마스크를 키우거나 흐리게 다듬어야 하면 지금처럼 `mask` 출력을 다른 노드로 처리하세요.
+
+### 준비
+
+- 기본 배경 제거 노드가 들어간 ComfyUI(2026년 5월 이후)가 필요합니다.
+- [birefnet.safetensors](https://huggingface.co/Comfy-Org/BiRefNet/resolve/main/background_removal/birefnet.safetensors)를 `ComfyUI/models/background_removal/` 폴더에 넣습니다. 추가 Python 패키지는 필요 없습니다.
+
+### 사용법
+
+노드 추가 메뉴의 **image/background removal → Moon Remove Background (MoonRemoveBackground)**에서 추가하거나, `moon` 또는 `remove background`로 검색합니다.
+
+1. 기본 **Load Background Removal Model**(배경 제거 모델 불러오기)에서 `birefnet.safetensors`를 고르고, `bg_model` 출력을 이 노드의 `bg_removal_model`에 연결합니다.
+2. `image`에 배경을 지울 이미지를 연결합니다.
+3. `image` 출력을 저장 노드에 연결합니다. PNG나 WebP로 저장하면 투명 배경이 유지되고, JPG는 투명도가 없어 배경이 다시 보입니다.
+
+### 입력 및 출력
+
+| 구분 | 이름 | 타입 | 설명 |
+| --- | --- | --- | --- |
+| 입력 | `bg_removal_model` | `BACKGROUND_REMOVAL` | 기본 Load Background Removal Model의 `bg_model` 출력 |
+| 입력 | `image` | `IMAGE` | 배경을 지울 이미지. 배치면 모두 처리 |
+| 출력 | `mask` | `MASK` | 피사체 마스크(피사체 1, 배경 0). 기본 Remove Background와 같음 |
+| 출력 | `image` | `IMAGE` | 배경이 투명한 RGBA 이미지. RGB는 입력 그대로이고 알파는 `mask` |
+
+### 세부 동작
+
+- 마스크는 기본 Remove Background와 같은 방법(모델의 `encode_image`)으로 만듭니다. HF Space는 입력을 ImageNet 평균·표준편차로 정규화하지만 ComfyUI 기본 방식은 정규화하지 않으므로, 가장자리가 Space 결과와 조금 다를 수 있습니다.
+- 입력 이미지에 알파 채널이 있으면 새 마스크로 바꿉니다.
+- `image` 출력은 4채널입니다. 4채널 이미지를 받지 못하는 노드에는 원본 이미지와 `mask`를 따로 연결하세요.
+
 ## 보안
 
 기본 Save Image 노드는 `output` 폴더 밖에 저장하지 못하게 막습니다. Moon Save Image는 절대 경로와 `..`을 허용하므로, ComfyUI 서버에서 워크플로를 실행할 수 있는 사람은 ComfyUI 프로세스가 쓸 수 있는 모든 위치에 이미지 파일을 저장할 수 있습니다. 여러 사람이 쓰는 서버에 이 팩을 설치할 때는 이 점을 고려하세요.
 
 ## 문제 해결
 
-- **노드를 찾을 수 없음:** 노드 검색에서 `moon`을 검색하면 네 노드가 모두 나옵니다. 설치 후 ComfyUI를 재시작했는지 확인하세요.
+- **노드를 찾을 수 없음:** 노드 검색에서 `moon`을 검색하면 이 팩의 노드가 모두 나옵니다. 설치 후 ComfyUI를 재시작했는지 확인하세요.
 - **이미지 로드 오류:** 목록에 등록된 이미지 파일이 ComfyUI의 `input` 폴더에 있는지 확인하세요.
 - **프론트엔드 UI가 갱신되지 않음:** ComfyUI를 재시작하고 브라우저를 새로고침하세요. 브라우저 캐시가 남아 있으면 강력 새로고침을 시도하세요.
 - **Moon Text List나 Moon Save Image가 이상하게 동작함:** `custom_nodes`에 예전 `ComfyUI-Moon-Text-List`나 `ComfyUI-Moon-SaveImage` 폴더가 남아 있는지 확인하세요. [예전 저장소에서 옮겨 오기](#예전-저장소에서-옮겨-오기)를 참고하세요.
+- **Moon Remove Background에 모델을 연결할 수 없음:** ComfyUI를 2026년 5월 이후 버전으로 업데이트하고, `models/background_removal/`에 모델 파일이 있는지 확인하세요.
 - **저장한 이미지에서 워크플로가 열리지 않음:** Moon Save Image의 `save_metadata`가 켜져 있는지, 형식이 PNG나 WebP인지 확인하세요.
 
 ## 개발 및 테스트

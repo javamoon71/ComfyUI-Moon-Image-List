@@ -288,3 +288,23 @@
 - **보안 섹션**: 기본 SaveImage와 달리 output 밖 저장을 허용하므로 공개 README에 따로 적었다.
 - **라이선스**: Moon 노드들과 같은 MIT, `Copyright (c) 2026 javamoon71`. 작업 폴더의 LICENSE가 CRLF여도 `core.autocrlf=true`라 저장소에는 LF로 커밋된다(`git show HEAD:LICENSE`로 확인). 따로 고칠 필요 없다.
 - **ComfyUI(GPL-3.0) 참고 범위**: 기본 노드의 동작 규칙(파일 이름 형식, PNG 텍스트 청크·WebP EXIF 키 배치, `ui.images` 형식)을 맞췄을 뿐 코드를 복사하지 않았다. 대부분의 커스텀 노드처럼 MIT로 배포한다.
+
+## 2026-10-30 Moon Remove Background
+- **요청**: HF Space `hf-applications/background-removal`의 `app.py` 기능을 배경 제거 노드로 추가. Space는 `ZhengPeng7/BiRefNet`을 transformers `trust_remote_code`로 불러와 1024×1024 리사이즈, ImageNet 정규화, sigmoid 마스크를 원본 크기로 되돌려 `putalpha`로 투명 PNG를 만든다(Space와 모델 모두 MIT).
+- **방향이 바뀐 과정**: 처음에는 Space처럼 노드 안에서 transformers로 모델을 받으려 했다(`timm` 추가, 원격 코드 커밋 고정, `models/BiRefNet` 다운로드까지 검토). 사용자가 다음 순서로 방향을 정했다.
+  1. "모델을 연결받아야 한다"
+  2. ComfyUI 기본 "배경 제거 모델 불러오기 → 배경 제거" 워크플로 스크린샷과 함께 "이 구조 중간에 끼는 것"
+  3. "기본 배경 제거 노드를 이걸로 교체하는 방식"
+  그래서 자체 로더와 transformers를 버리고 ComfyUI 기본 모델을 연결받는 교체용 노드로 만들었다.
+- **ComfyUI 기본 노드(Comfy-Org/ComfyUI master, 2026-10-30 확인)**:
+  - `comfy_extras/nodes_bg_removal.py`의 `LoadBackgroundRemovalModel`이 `models/background_removal`의 파일을 불러 `BACKGROUND_REMOVAL` 타입(`bg_model`)을 낸다.
+  - `RemoveBackground`는 `bg_removal_model`, `image`를 받아 `encode_image(image)`의 (B, H, W) 피사체 마스크만 낸다.
+  - 2026-05에 추가됐고(#12747), 입력 순서는 2026-06에 `bg_removal_model`이 앞으로 왔다(#14353).
+  - 모델 파일 `Comfy-Org/BiRefNet`의 `background_removal/birefnet.safetensors`는 `ZhengPeng7/BiRefNet`을 다시 묶은 것으로, Space와 같은 모델이다. 같은 저장소에 `lucida.safetensors`도 있다.
+- **노드 설계**: 입력 이름·타입·순서를 기본 노드와 같게 했다. 출력은 `(mask, image)`로, 첫 출력이 기본 노드와 같아 바꿔 끼울 수 있다. `image`는 `cat(image[..., :3], mask)`이고 RGB는 입력 그대로다(Space도 원본에 알파만 붙인다).
+- **Join Image with Alpha와 같은 결과**: 기본 `JoinImageWithAlpha`는 `alpha = 1 - mask`이므로, 사용자 워크플로의 마스크 반전 → 합치기는 알파 = 피사체 마스크다. 이 노드의 `image`와 같다(부동소수 반올림 차이만 있다). 사용자 워크플로에 있던 Grow Mask With Blur 같은 다듬기는 넣지 않았다. 필요하면 `mask` 출력으로 처리한다.
+- **전처리 차이**: 기본 `birefnet.json`은 mean 0, std 1이라 ImageNet 정규화를 하지 않고, 리사이즈는 bicubic(antialias)이다. Space는 PIL bilinear 리사이즈 + ImageNet 정규화다. 공식 API(`encode_image`)를 쓰는 편이 다른 모델(lucida)과 이후 ComfyUI 변경에도 맞으므로 Space 전처리를 따라 하지 않았다. README에 결과가 조금 다를 수 있다고 적었다.
+- **dtype**: `encode_image`는 `intermediate_dtype`으로 마스크를 내므로 이어 붙일 때 `mask.to(image)`로 맞춘다. `mask` 출력은 기본 노드처럼 그대로 낸다.
+- **이름·카테고리**: 키 `MoonRemoveBackground`. 기본 노드 키 `RemoveBackground`와 겹치지 않게 `Moon` 접두어를 붙였다(Moon Save Image와 같은 이유). 카테고리는 기본 노드와 같은 `image/background removal`이다.
+- **한 노드 = 한 파일**: `nodes/remove_background.py`, `tests/test_remove_background.py`. 추가 패키지와 `requirements.txt`는 필요 없다.
+- **확인 범위**: 가짜 모델로 단위 테스트만 했다. 이 PC에는 ComfyUI가 없어 실제 모델 실행은 ComfyUI PC에서 확인해야 한다.

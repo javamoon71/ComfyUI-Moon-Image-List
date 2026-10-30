@@ -254,3 +254,16 @@ increment는 마지막 다음 0, decrement는 0 다음 마지막, randomize는 0
 - [x] README 공개용으로 정리: 영어 `README.md` + 한국어 `README.ko.md` (Text-List 구성)
 - [x] LICENSE(MIT, javamoon71) 확인
 - [ ] 저장소 공개 후 README 스크린샷 추가 (ComfyUI에서 노드 화면 캡처)
+
+## Plan 15 — Moon Remove Background 노드
+HF Space `hf-applications/background-removal`(app.py)처럼 배경을 지운 투명(RGBA) 이미지를 만든다. 사용자 요청에 따라 모델은 ComfyUI 기본 "Load Background Removal Model"(배경 제거 모델 불러오기)의 `bg_model`을 연결받아, 기본 구조의 중간에 끼워 쓴다.
+- 입력: bg_removal_model(BACKGROUND_REMOVAL), image(IMAGE)
+- 출력: mask(MASK, 피사체 1. 기본 Remove Background와 같음), image(IMAGE, RGBA. RGB는 원본 그대로, 알파 = 마스크)
+- 기본 Remove Background를 이 노드로 교체해 쓴다(사용자 확인). 입력과 첫 출력(mask)이 기본 노드와 같고 image 출력이 더 있다
+- image 출력은 기본 Remove Background → Invert Mask → Join Image with Alpha 결과와 같다
+- [x] 노드 구현 (`nodes/remove_background.py`), 마스크는 기본 모델의 `encode_image`
+- [x] 등록 (`__init__.py`)
+- [x] 단위 테스트 (가짜 모델, `tests/test_remove_background.py`)
+- [x] README, context-notes 반영
+- [x] 커밋, push
+- [ ] ComfyUI PC에서 기본 로더와 연결해 실행 확인
